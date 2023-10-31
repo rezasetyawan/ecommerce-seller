@@ -23,10 +23,10 @@ interface ProductSnapshots {
 
 export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const client = await serverSupabaseClient(event);
-    const productId = event.context.params?.id as string
+    const slug = event.context.params?.slug as string
 
     try {
-        const { data, error } = await client.from('products').select('id, name, description, category_id, sold').eq('id', productId)
+        const { data, error } = await client.from('products').select('id, name, description, category_id, sold').eq('slug', slug)
 
         if (error) {
             return { data: {}, error: true, errorMessage: error.message }

@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
-import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
+import { supabase } from "@/lib/supabase";
 
 interface Variant {
   id: string;
@@ -42,12 +42,11 @@ interface Product {
   updated_at: string;
 }
 
-const client = useSupabaseClient();
 const config = useRuntimeConfig();
 
 const uploadImage = async (fileName: string, file: File) => {
   try {
-    const { data, error } = await client.storage
+    const { data, error } = await supabase.storage
       .from("product-images")
       .upload(`${fileName}`, file, {
         cacheControl: "60",
@@ -250,11 +249,7 @@ const onSubmitHandler = async () => {
               ><Input class="w-fit" type="number" v-model="variant.price"
             /></TableCell>
             <TableCell class="flex gap-3 items-center"
-              ><Input
-                class="w-fit"
-                type="number"
-                v-model="variant.stocks"
-              />
+              ><Input class="w-fit" type="number" v-model="variant.stocks" />
 
               <button
                 class="p-3"
