@@ -6,6 +6,7 @@ interface Product {
     category_id: number
     category?: string
     stocks?: number
+    slug?: string
     // size?: 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL'
 }
 
@@ -20,7 +21,7 @@ interface ProductDetail {
     category: string
     stocks: number
     images: { id: string, url: string }[]
-    variants: { id: number, value: string, price: number, stocks: number, is_default: boolean }[]
+    variants: { id: string, value: string, price: number, stocks: number, is_default: boolean }[]
 }
 
 export type { Product, ProductDetail }

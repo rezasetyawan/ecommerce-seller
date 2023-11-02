@@ -2,7 +2,6 @@ import { serverSupabaseClient } from '#supabase/server'
 
 
 interface Product {
-    id: number,
     name: string
     created_at: number
     updated_at: string

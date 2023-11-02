@@ -1,5 +1,4 @@
 import { serverSupabaseClient } from '#supabase/server'
-// import { SupabaseClient } from '@supabase/supabase-js';
 
 interface Product {
     name: string

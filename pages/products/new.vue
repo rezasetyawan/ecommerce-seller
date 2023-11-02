@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 import { nanoid } from "nanoid";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -21,7 +22,8 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Button } from "../../components/ui/button";
-import { supabase } from "@/lib/supabase";
+import { addProductImage } from "~/utils/useImage";
+import { X } from "lucide-vue-next";
 
 interface Variant {
   id: string;
@@ -42,28 +44,29 @@ interface Product {
   updated_at: string;
 }
 
+const supabase = useSupabaseClient();
 const config = useRuntimeConfig();
 
-const uploadImage = async (fileName: string, file: File) => {
-  try {
-    const { data, error } = await supabase.storage
-      .from("product-images")
-      .upload(`${fileName}`, file, {
-        cacheControl: "60",
-        upsert: true,
-      });
-    if (error) {
-      throw new Error(error.message);
-    }
-    const url =
-      config.public.SUPABASE_URL +
-      "/storage/v1/object/public/product-images/" +
-      data?.path;
-    return url;
-  } catch (error) {
-    console.error(error);
-  }
-};
+// const uploadImage = async (fileName: string, file: File) => {
+//   try {
+//     const { data, error } = await supabase.storage
+//       .from("product-images")
+//       .upload(`${fileName}`, file, {
+//         cacheControl: "60",
+//         upsert: true,
+//       });
+//     if (error) {
+//       throw new Error(error.message);
+//     }
+//     const url =
+//       config.public.SUPABASE_URL +
+//       "/storage/v1/object/public/product-images/" +
+//       data?.path;
+//     return url;
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 const { data: categorySnapshot } = await useFetch("/api/categories");
 
@@ -94,6 +97,8 @@ const variants = ref<Variant[]>([
   },
 ]);
 
+const images = ref<File[]>([]);
+
 const addNewVariantHandler = () => {
   variants.value = [
     ...variants.value,
@@ -116,7 +121,6 @@ const deleteVariantHandler = (id: string) => {
   }
 };
 
-const images = ref<File[]>([]);
 const toRupiah = (price: number) => {
   return "Rp. " + price.toLocaleString("id-ID");
 };
@@ -128,142 +132,174 @@ const onImageChangeHandler = (event: Event) => {
       images.value?.push(target.files[i]);
     }
   }
-
-  console.log(images.value);
 };
 
-watch(
-  product,
-  () => {
-    console.log(product.value);
-  },
-  { deep: true, immediate: true }
-);
+// watch(
+//   product,
+//   () => {
+//     console.log(product.value);
+//   },
+//   { deep: true, immediate: true }
+// );
 
-watch(
-  variants,
-  () => {
-    console.log(variants.value);
-  },
-  { deep: true, immediate: true }
-);
+// watch(
+//   variants,
+//   () => {
+//     console.log(variants.value);
+//   },
+//   { deep: true, immediate: true }
+// );
 
-watch(images, () => console.log(images.value));
+watch(images, () => console.log(images.value), { deep: true, immediate: true });
 
-const getImageUrls = async () => {
+// const getImageUrls = async () => {
+//   try {
+//     if (images.value) {
+//       for (let i = 0; i < images.value?.length; i++) {
+//         const file = images.value[i];
+//       }
+//     }
+//   } catch (error) {}
+// };
+
+const onSubmitHandler = async () => {
   try {
-    if (images.value) {
-      for (let i = 0; i < images.value?.length; i++) {
-        const file = images.value[i];
-      }
+    const imagesUrl = await Promise.all(
+      images.value.map(async (image) => {
+        const url = await addProductImage(
+          supabase,
+          image,
+          config.public.SUPABASE_URL
+        );
+        return url;
+      })
+    );
+
+    const productImages = imagesUrl.map((url) => {
+      return {
+        id: nanoid(16),
+        product_id: product.value.id,
+        url: url,
+      };
+    });
+
+    const { data, error } = await useFetch("/api/products", {
+      method: "POST",
+      body: {
+        ...product.value,
+        images: productImages,
+        variants: variants.value,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.value?.message);
     }
   } catch (error) {}
 };
 
-const onSubmitHandler = async () => {
-  const imagesUrl = await Promise.all(
-    images.value.map(async (image) => {
-      const url = await uploadImage(image.name, image);
-      return url;
-    })
-  );
-
-  const productImages = imagesUrl.map((url) => {
-    return {
-      id: nanoid(16),
-      product_id: product.value.id,
-      url: url,
-    };
-  });
-
-  const { data, error } = await useFetch("/api/products", {
-    method: "POST",
-    body: {
-      ...product.value,
-      images: productImages,
-      variants: variants.value,
-    },
-  });
-
-  console.log({
-    variants: variants.value,
-  });
-};
+definePageMeta({
+  layout: "my-layout",
+});
 </script>
 <template>
-  <section class="mx-80 my-20">
-    <Label for="product_name">Product Name</Label>
-    <Input
-      type="text"
-      required
-      placeholder="Type here..."
-      name="product_name"
-      class="my-2"
-      v-model="product.name"
-    />
+  <section class="mx-20 xl:mx-80 my-20">
+    <h2 class="my-8 font-semibold text-2xl text-center">Add New Product</h2>
+    <form @submit.prevent="onSubmitHandler">
+      <Label for="product_name">Product Name</Label>
+      <Input
+        type="text"
+        required
+        placeholder="Type here..."
+        name="product_name"
+        class="my-2"
+        v-model="product.name"
+      />
 
-    <Label class="mt-4 mb-2">Category</Label>
-    <Select v-model="product.category_id" v-if="categories">
-      <SelectTrigger class="w-[180px]">
-        <SelectValue placeholder="Select category" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Category</SelectLabel>
-          <template v-for="category in categories" :key="category.id"
-            ><SelectItem :value="category.id">{{
-              category.name
-            }}</SelectItem></template
+      <Label class="mt-4 mb-2">Category</Label>
+      <Select v-model="product.category_id" v-if="categories" required>
+        <SelectTrigger class="w-[180px]">
+          <SelectValue placeholder="Select category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Category</SelectLabel>
+            <template v-for="category in categories" :key="category.id"
+              ><SelectItem :value="category.id">{{
+                category.name
+              }}</SelectItem></template
+            >
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
+      <Label class="mt-4 mb-2">Product Description</Label>
+      <Textarea
+        name="product_description"
+        v-model="product.description"
+        required
+      />
+
+      <Label for="product_images" class="mt-4 mb-2">Product Images</Label>
+      <Input
+        type="file"
+        accept="image/png, image/jpeg, image/jpg"
+        multiple
+        name="product_images"
+        @change="(event: Event) => onImageChangeHandler(event)"
+        required
+      />
+
+      <div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Variant</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Stock</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="(variant, index) in variants" :key="index">
+              <TableCell class="font-medium">
+                <Input
+                  class="w-fit"
+                  type="text"
+                  v-model="variant.value"
+                  required
+                />
+              </TableCell>
+              <TableCell
+                ><Input class="w-fit" type="number" v-model="variant.price"
+              /></TableCell>
+              <TableCell class="flex gap-3 items-center justify-between"
+                ><Input
+                  class="w-fit"
+                  type="number"
+                  v-model="variant.stocks"
+                  required
+                />
+
+                <button
+                  class="p-3"
+                  @click="() => deleteVariantHandler(variant.id)"
+                >
+                  <X />
+                </button>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <div class="flex justify-end">
+          <Button @click="addNewVariantHandler" class="my-4 block px-5"
+            >+</Button
           >
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        </div>
 
-    <Label class="mt-4 mb-2">Product Description</Label>
-    <Textarea name="product_description" v-model="product.description" />
-
-    <Label for="product_images" class="mt-4 mb-2">Product Images</Label>
-    <Input
-      type="file"
-      accept="image/png, image/jpeg, image/jpg"
-      multiple
-      name="product_images"
-      @change="(event: Event) => onImageChangeHandler(event)"
-    />
-
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead> Variant </TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Stock</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="(variant, index) in variants" :key="index">
-            <TableCell class="font-medium">
-              <Input class="w-fit" type="text" v-model="variant.value" />
-            </TableCell>
-            <TableCell
-              ><Input class="w-fit" type="number" v-model="variant.price"
-            /></TableCell>
-            <TableCell class="flex gap-3 items-center"
-              ><Input class="w-fit" type="number" v-model="variant.stocks" />
-
-              <button
-                class="p-3"
-                @click="() => deleteVariantHandler(variant.id)"
-              >
-                x
-              </button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-      <Button @click="addNewVariantHandler" class="my-4 block">+</Button>
-
-      <Button @click="onSubmitHandler" class="">Submit</Button>
-    </div>
+        <div class="">
+          <Button type="submit" class="w-full mt-16">Submit</Button>
+        </div>
+      </div>
+    </form>
   </section>
 </template>

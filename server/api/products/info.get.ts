@@ -8,7 +8,8 @@ interface ProductInfo {
     price?: number
     category_id: number
     category?: string
-    stocks?: number
+    stocks?: number,
+    slug: string
 }
 
 interface ProductSnapshots {
@@ -19,7 +20,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const client = await serverSupabaseClient(event);
 
     try {
-        const { data, error } = await client.from('products').select('id, name, sold, category_id')
+        const { data, error } = await client.from('products').select('id, name, sold, category_id, slug')
 
         if (error) {
             return { data: [] }

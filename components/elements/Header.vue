@@ -3,12 +3,12 @@ import { ref } from "vue";
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-vue-next";
 import SheetMenu from "./SheetMenu.vue";
-import { Toggle } from "../ui/toggle";
-import { useDark, useToggle } from "@vueuse/core";
+// import { Toggle } from "../ui/toggle";
+// import { useDark, useToggle } from "@vueuse/core";
 
-const isDark = useDark();
+// const isDark = useDark();
 
-const toggleDarkMode = useToggle(isDark);
+// const toggleDarkMode = useToggle(isDark);
 
 const sheetOpen = ref<boolean>(false);
 const routes = [
@@ -23,7 +23,7 @@ const routes = [
     active: false,
   },
   {
-    href: `/orders`,
+    href: `/order-list`,
     label: "Orders",
     active: false,
   },
@@ -36,7 +36,7 @@ const routes = [
 </script>
 <template>
   <header
-    class="flex gap-2 items-center p-3 font-rubik border-b lg:justify-between lg:px-8"
+    class="flex gap-2 items-center p-3 font-rubik border-b lg:justify-between lg:px-8 fixed top-0 bg-white w-full dark:bg-black"
   >
     <Menu class="lg:hidden" @click="sheetOpen = !sheetOpen" />
     <h1 class="text-lg lg:text-2xl font-semibold">Ini Toko</h1>
@@ -51,7 +51,7 @@ const routes = [
           >{{ route.label }}</NuxtLink
         >
       </template>
-      <Toggle @click="toggleDarkMode()">{{ isDark ? "Light" : "Dark" }}</Toggle>
+      <!-- <Toggle @click="toggleDarkMode()">{{ isDark ? "Light" : "Dark" }}</Toggle> -->
     </nav>
   </header>
   <SheetMenu :open="sheetOpen" :routes="routes" />

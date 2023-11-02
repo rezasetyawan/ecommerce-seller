@@ -1,54 +1,38 @@
 <script setup lang="ts">
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/vue-table";
-import {
-  FlexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useVueTable,
-} from "@tanstack/vue-table";
 import { Button } from "../../components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
 import { Product } from "../../types";
+
 const products = ref<Product[] | null>();
 
-const { data, error, pending, refresh } = await useFetch("/api/products/info", {
+const { data } = await useFetch("/api/products/info", {
   key: "products",
   method: "get",
 });
 
 products.value = data.value?.data as Product[];
-console.log(products.value);
-
-function copy(id: string) {
-  navigator.clipboard.writeText(id);
-}
 
 const toRupiah = (price: number) => {
   return "Rp. " + price.toLocaleString("id-ID");
 };
+
+definePageMeta({
+  layout: "my-layout",
+});
 </script>
 <template>
   <section class="p-14">
@@ -74,7 +58,7 @@ const toRupiah = (price: number) => {
             {{ index + 1 }}
           </TableCell>
           <TableCell
-            ><NuxtLink :to="'/products/' + product.id">{{
+            ><NuxtLink :to="'/products/' + product.slug">{{
               product.name
             }}</NuxtLink></TableCell
           >
@@ -95,10 +79,9 @@ const toRupiah = (price: number) => {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuItem> Edit </DropdownMenuItem>
-                <!-- <DropdownMenuSeparator /> -->
                 <DropdownMenuItem>Delete</DropdownMenuItem>
                 <DropdownMenuItem
-                  ><NuxtLink :to="'/products/' + product.id"
+                  ><NuxtLink :to="'/products/' + product.slug"
                     >View Detail</NuxtLink
                   ></DropdownMenuItem
                 >

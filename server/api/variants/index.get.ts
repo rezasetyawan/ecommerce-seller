@@ -6,7 +6,7 @@ export default eventHandler(async (event) => {
     const query = getQuery(event)
 
     try {
-        const { data, error } = await client.from('variantes').select('id, name, sold, category_id')
+        const { data, error } = await client.from('variants').select('id, name, sold, category_id')
 
         if (error) {
             return { data: [] }
