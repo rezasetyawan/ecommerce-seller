@@ -40,7 +40,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                 const products = await Promise.all(order_products.map(async (item) => {
                     const { data: variant } = await client.from('variants').select('product_id, price, value').eq('id', item.variant_id as unknown as string).single()
 
-                    const { data: product } = await client.from('products').select('id, name').eq('id', variant?.product_id as unknown as string).single()
+                    const { data: product } = await client.from('products').select('id, name, slug').eq('id', variant?.product_id as unknown as string).single()
 
                     const { data: image } = await client.from('product_images').select('url').eq('product_id', product?.id as unknown as string).single()
 
@@ -50,7 +50,8 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                         quantity: item.quantity,
                         price: variant ? variant.price : 0,
                         image_url: image ? image.url : '',
-                        variant: variant ? variant.value : ''
+                        variant: variant ? variant.value : '',
+                        slug: product ? product.slug : ''
                     } as OrderItem
                 }))
 

@@ -30,7 +30,8 @@ interface OrderItem {
     quantity: number;
     price: number;
     image_url: string;
-    variant: string
+    variant: string;
+    slug: string
 }
 
 interface Order {
@@ -47,4 +48,32 @@ interface Order {
     order_items: OrderItem[];
 }
 
-export type { Product, ProductDetail, OrderItem, Order }
+interface OrderDetail {
+    id: string;
+    created_at: string;
+    total: number;
+    status:
+    | "PENDING"
+    | "PAYMENT"
+    | "ONPROCESS"
+    | "SHIPPING"
+    | "CANCELLED"
+    | "FINISHED";
+    order_items: OrderItem[];
+    address: {
+        name: string,
+        phone_number: string,
+        full_address: string,
+        district: string,
+        city: string,
+        province: string
+    }
+    shipment: {
+        receipt_number: string
+        shipment_fee: number
+        service: string
+    }
+    subtotal: number
+}
+
+export type { Product, ProductDetail, OrderItem, Order, OrderDetail }

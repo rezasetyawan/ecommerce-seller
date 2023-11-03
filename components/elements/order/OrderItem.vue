@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { Button } from "../../ui/button";
 import {
-Dialog,
-DialogContent,
-DialogHeader,
-DialogTitle,
-DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "../../ui/dialog";
 
 import { ref, toRefs } from "vue";
@@ -13,15 +13,15 @@ import { Order } from "~/types";
 import { Input } from "../../ui/input";
 
 import {
-AlertDialog,
-AlertDialogAction,
-AlertDialogCancel,
-AlertDialogContent,
-AlertDialogDescription,
-AlertDialogFooter,
-AlertDialogHeader,
-AlertDialogTitle,
-AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "../../ui/alert-dialog";
 
 interface Props {
@@ -90,7 +90,7 @@ const getStatusMessage = (status: string) => {
       <div class="w-full space-y-3">
         <template v-for="item in order.order_items" :key="item.id">
           <div class="flex gap-3 items-center">
-            <!-- <img :src="item.image_url" class="w-20" /> -->
+            <img :src="item.image_url" class="w-20" />
             <div class="w-full">
               <h2 class="text-lg font-semibold">{{ item.name }}</h2>
               <p class="font-medium text-sm">{{ item.variant }}</p>
@@ -102,11 +102,14 @@ const getStatusMessage = (status: string) => {
         </template>
       </div>
       <div class="w-full self-end">
-        <p>Subtotal</p>
+        <p>Total</p>
         <p class="font-medium">{{ toRupiah(order.total) }}</p>
       </div>
     </div>
     <div class="flex justify-end">
+      <Button variant="link"
+        ><NuxtLink :to="'/order/' + order.id">See detail</NuxtLink></Button
+      >
       <div
         v-if="order.status === 'PENDING' || order.status === 'CANCELLED'"
         class="flex gap-2"

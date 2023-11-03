@@ -18,13 +18,18 @@ const updateOrderStatus = async (client: SupabaseClient, orderId: string, status
 
 const updateOrderReceipt = async (client: SupabaseClient, orderId: string, receiptNumber: string) => {
     try {
-        const { data, error } = await client.from('orders').update({ status: 'SHIPPING', receipt_number: receiptNumber }).eq('id', orderId)
+        const { error: orderError } = await client.from('orders').update({ status: 'SHIPPING', }).eq('id', orderId)
+        const { error: shipmentError } = await client.from('order_shipment').update({ receipt_number: receiptNumber }).eq('order_id', orderId)
 
-        if (error) {
-            throw new Error(error.message)
+        if (orderError) {
+            throw new Error(orderError.message)
         }
 
-        return data
+        if (shipmentError) {
+            throw new Error(shipmentError.message)
+        }
+
+        return
     } catch (error: any) {
         throw new Error(error.message)
     }
