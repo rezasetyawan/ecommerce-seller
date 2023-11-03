@@ -1,20 +1,7 @@
 import { serverSupabaseClient } from '#supabase/server'
+import { OrderItem, Order } from '~/types'
 
-interface OrderItem {
-    id: string
-    name: string
-    quantity: number
-    price: number
-    image_url: string
-}
 
-interface Order {
-    id: string
-    created_at: string
-    total: number
-    status: "PENDING" | "PAYMENT" | "ONPROCESS" | "SHIPPING" | "CANCELLED";
-    order_items: OrderItem[]
-}
 
 interface ApiResponse {
     data: {
@@ -51,7 +38,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
 
             if (order_products) {
                 const products = await Promise.all(order_products.map(async (item) => {
-                    const { data: variant } = await client.from('variants').select('product_id, price').eq('id', item.variant_id as unknown as string).single()
+                    const { data: variant } = await client.from('variants').select('product_id, price, value').eq('id', item.variant_id as unknown as string).single()
 
                     const { data: product } = await client.from('products').select('id, name').eq('id', variant?.product_id as unknown as string).single()
 
@@ -62,7 +49,8 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                         name: product ? product.name : '',
                         quantity: item.quantity,
                         price: variant ? variant.price : 0,
-                        image_url: image ? image.url : ''
+                        image_url: image ? image.url : '',
+                        variant: variant ? variant.value : ''
                     } as OrderItem
                 }))
 

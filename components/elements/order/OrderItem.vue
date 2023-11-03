@@ -8,9 +8,10 @@ DialogTitle,
 DialogTrigger,
 } from "../../ui/dialog";
 
+import { ref, toRefs } from "vue";
+import { Order } from "~/types";
 import { Input } from "../../ui/input";
 
-import { ref, toRefs } from "vue";
 import {
 AlertDialog,
 AlertDialogAction,
@@ -22,28 +23,6 @@ AlertDialogHeader,
 AlertDialogTitle,
 AlertDialogTrigger,
 } from "../../ui/alert-dialog";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  image_url: string;
-}
-
-interface Order {
-  id: string;
-  created_at: string;
-  total: number;
-  status:
-    | "PENDING"
-    | "PAYMENT"
-    | "ONPROCESS"
-    | "SHIPPING"
-    | "CANCELLED"
-    | "FINISHED";
-  order_items: OrderItem[];
-}
 
 interface Props {
   order: Order;
@@ -111,10 +90,13 @@ const getStatusMessage = (status: string) => {
       <div class="w-full space-y-3">
         <template v-for="item in order.order_items" :key="item.id">
           <div class="flex gap-3 items-center">
-            <img :src="item.image_url" class="w-20" />
+            <!-- <img :src="item.image_url" class="w-20" /> -->
             <div class="w-full">
               <h2 class="text-lg font-semibold">{{ item.name }}</h2>
-              <p>{{ item.quantity }} products x {{ toRupiah(item.price) }}</p>
+              <p class="font-medium text-sm">{{ item.variant }}</p>
+              <p class="text-black/70 font-medium text-sm">
+                {{ item.quantity }} products x {{ toRupiah(item.price) }}
+              </p>
             </div>
           </div>
         </template>

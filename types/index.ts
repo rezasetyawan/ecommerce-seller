@@ -24,4 +24,27 @@ interface ProductDetail {
     variants: { id: string, value: string, price: number, stocks: number, is_default: boolean }[]
 }
 
-export type { Product, ProductDetail }
+interface OrderItem {
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    image_url: string;
+    variant: string
+}
+
+interface Order {
+    id: string;
+    created_at: string;
+    total: number;
+    status:
+    | "PENDING"
+    | "PAYMENT"
+    | "ONPROCESS"
+    | "SHIPPING"
+    | "CANCELLED"
+    | "FINISHED";
+    order_items: OrderItem[];
+}
+
+export type { Product, ProductDetail, OrderItem, Order }

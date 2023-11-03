@@ -7,7 +7,7 @@ interface Product {
     updated_at: string
     description: string
     category_id: number
-    variants: { id: string, value: string, price: number, product_id: string, is_default: boolean, stocks: number }[]
+    variants: { id: string, value: string, price: number, product_id: string, is_default: boolean, stocks: number, weight: string }[]
     sold: number
     images: { id: string, url: string, product_id: string }[]
 }
@@ -18,7 +18,7 @@ export default eventHandler(async (event) => {
 
     try {
         const slug = body.name.toLowerCase().replaceAll(" ", "-");
-        
+
         const { error } = await client.from('products').insert({ id: body.id, name: body.name, created_at: body.created_at, updated_at: body.updated_at, description: body.description, category_id: body.category_id, sold: body.sold, slug: slug } as never)
 
 

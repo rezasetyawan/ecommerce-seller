@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
+import { X } from "lucide-vue-next";
 import { nanoid } from "nanoid";
+import { addProductImage } from "~/utils/useImage";
+import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
@@ -12,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Textarea } from "../../components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -21,17 +22,17 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { Button } from "../../components/ui/button";
-import { addProductImage } from "~/utils/useImage";
-import { X } from "lucide-vue-next";
+import { Textarea } from "../../components/ui/textarea";
+import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 
 interface Variant {
   id: string;
   value: string;
-  price: number;
-  stocks: number;
+  price: number | undefined;
+  stocks: number | undefined;
   is_default: boolean;
   product_id: string;
+  weight: number | undefined;
 }
 
 interface Product {
@@ -46,27 +47,6 @@ interface Product {
 
 const supabase = useSupabaseClient();
 const config = useRuntimeConfig();
-
-// const uploadImage = async (fileName: string, file: File) => {
-//   try {
-//     const { data, error } = await supabase.storage
-//       .from("product-images")
-//       .upload(`${fileName}`, file, {
-//         cacheControl: "60",
-//         upsert: true,
-//       });
-//     if (error) {
-//       throw new Error(error.message);
-//     }
-//     const url =
-//       config.public.SUPABASE_URL +
-//       "/storage/v1/object/public/product-images/" +
-//       data?.path;
-//     return url;
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 
 const { data: categorySnapshot } = await useFetch("/api/categories");
 
@@ -90,10 +70,11 @@ const variants = ref<Variant[]>([
   {
     id: nanoid(16),
     value: "",
-    price: 0,
-    stocks: 0,
+    price: undefined,
+    stocks: undefined,
     is_default: true,
     product_id: product.value.id,
+    weight: undefined,
   },
 ]);
 
@@ -105,10 +86,11 @@ const addNewVariantHandler = () => {
     {
       id: nanoid(16),
       value: "",
-      price: 0,
-      stocks: 0,
+      price: undefined,
+      stocks: undefined,
       is_default: false,
       product_id: product.value.id,
+      weight: undefined,
     },
   ];
 };
@@ -134,24 +116,6 @@ const onImageChangeHandler = (event: Event) => {
   }
 };
 
-// watch(
-//   product,
-//   () => {
-//     console.log(product.value);
-//   },
-//   { deep: true, immediate: true }
-// );
-
-// watch(
-//   variants,
-//   () => {
-//     console.log(variants.value);
-//   },
-//   { deep: true, immediate: true }
-// );
-
-watch(images, () => console.log(images.value), { deep: true, immediate: true });
-
 // const getImageUrls = async () => {
 //   try {
 //     if (images.value) {
@@ -164,6 +128,10 @@ watch(images, () => console.log(images.value), { deep: true, immediate: true });
 
 const onSubmitHandler = async () => {
   try {
+    const transformedVariants = variants.value.map((variant) => {
+      return { ...variant, weight: variant.weight?.toString() };
+    });
+
     const imagesUrl = await Promise.all(
       images.value.map(async (image) => {
         const url = await addProductImage(
@@ -183,12 +151,12 @@ const onSubmitHandler = async () => {
       };
     });
 
-    const { data, error } = await useFetch("/api/products", {
+    const { error } = await useFetch("/api/products", {
       method: "POST",
       body: {
         ...product.value,
         images: productImages,
-        variants: variants.value,
+        variants: transformedVariants,
       },
     });
 
@@ -198,12 +166,20 @@ const onSubmitHandler = async () => {
   } catch (error) {}
 };
 
+watch(
+  variants,
+  () => {
+    console.log(variants.value);
+  },
+  { deep: true, immediate: true }
+);
+
 definePageMeta({
   layout: "my-layout",
 });
 </script>
 <template>
-  <section class="mx-20 xl:mx-80 my-20">
+  <section class="mx-20 xl:mx-48 my-20">
     <h2 class="my-8 font-semibold text-2xl text-center">Add New Product</h2>
     <form @submit.prevent="onSubmitHandler">
       <Label for="product_name">Product Name</Label>
@@ -257,6 +233,7 @@ definePageMeta({
               <TableHead>Variant</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Stock</TableHead>
+              <TableHead class="w-full">Weight (gr)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -270,18 +247,31 @@ definePageMeta({
                 />
               </TableCell>
               <TableCell
-                ><Input class="w-fit" type="number" v-model="variant.price"
-              /></TableCell>
-              <TableCell class="flex gap-3 items-center justify-between"
                 ><Input
                   class="w-fit"
                   type="number"
+                  v-model="variant.price"
+                  required
+              /></TableCell>
+              <TableCell
+                ><Input
+                  class="w-40"
+                  type="number"
                   v-model="variant.stocks"
+                  required
+                />
+              </TableCell>
+              <TableCell class="flex gap-3 items-center"
+                ><Input
+                  class="w-40"
+                  type="number"
+                  v-model="variant.weight"
                   required
                 />
 
                 <button
                   class="p-3"
+                  type="button"
                   @click="() => deleteVariantHandler(variant.id)"
                 >
                   <X />
@@ -291,7 +281,10 @@ definePageMeta({
           </TableBody>
         </Table>
         <div class="flex justify-end">
-          <Button @click="addNewVariantHandler" class="my-4 block px-5"
+          <Button
+            @click="addNewVariantHandler"
+            type="button"
+            class="my-4 block px-5"
             >+</Button
           >
         </div>

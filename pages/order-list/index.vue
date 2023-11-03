@@ -1,42 +1,8 @@
 <script setup lang="ts">
 import { useSupabaseClient } from "~/node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
-import { Button } from "~/components/ui/button";
-import { updateOrderStatus, updateOrderReceipt } from "~/utils/useOrder";
-
+import { updateOrderReceipt, updateOrderStatus } from "~/utils/useOrder";
 import OrderItem from "~/components/elements/order/OrderItem.vue";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "~/components/ui/dialog";
-
-import { Input } from "~/components/ui/input";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-  image_url: string;
-}
-
-interface Order {
-  id: string;
-  created_at: string;
-  total: number;
-  status:
-    | "PENDING"
-    | "PAYMENT"
-    | "ONPROCESS"
-    | "SHIPPING"
-    | "CANCELLED"
-    | "FINISHED";
-  order_items: OrderItem[];
-}
+import { Order } from '~/types';
 
 interface ApiResponse {
   data: {
@@ -99,7 +65,7 @@ definePageMeta({
 </script>
 <template>
   <section>
-    <section class="mx-20 my-10 space-y-5">
+    <section class="mx-20 my-20 space-y-5">
       <template v-for="order in orders" :key="order.id">
         <OrderItem
           :order="order"
