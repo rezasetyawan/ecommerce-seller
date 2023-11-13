@@ -3,9 +3,23 @@ import { useElementVisibility } from "@vueuse/core";
 import { Carousel, Pagination, Slide } from "vue3-carousel";
 import "vue3-carousel/dist/carousel.css";
 import { ProductDetail } from "~/types";
+import { toRupiah, formatDate } from "~/utils"
 
-interface ApiResponse {
+interface ProductApiResponse {
   data: ProductDetail;
+}
+
+interface Review {
+  id: string
+  text: string
+  created_at: string
+  variant: string
+  rating: string
+  user_name: string
+}
+
+interface ReviewApiResponse {
+  data: Review[]
 }
 
 const slug = ref<string>();
@@ -16,9 +30,13 @@ const product = ref<ProductDetail>();
 const { data } = await useFetch(`/api/products/${slug.value}`, {
   method: "get",
 });
-
-const apiResponse = data.value as ApiResponse;
+const apiResponse = data.value as ProductApiResponse;
 product.value = apiResponse.data;
+
+const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id)
+const reviews = ref<Review[]>([])
+const reviewData = reviewsResponse.value as ReviewApiResponse
+reviews.value = reviewData.data
 
 const seletedVariant = ref<string | undefined>("");
 const price = ref(product.value.price);
@@ -28,10 +46,6 @@ seletedVariant.value = product.value.variants.find(
 )?.id;
 
 
-const toRupiah = (price: number) => {
-  return "Rp. " + price.toLocaleString("id-ID");
-};
-
 watch(seletedVariant, () => {
   price.value = product.value?.variants.find(
     (s) => s.id === seletedVariant.value
@@ -40,20 +54,15 @@ watch(seletedVariant, () => {
 
 const productInfo = ref<HTMLElement | null>(null);
 const isProductInfoInViewport = useElementVisibility(productInfo);
-
+console.log(productInfo.value)
 definePageMeta({
   layout: "my-layout",
 });
 </script>
 <template>
-  <section
-    v-if="product"
-    class="sm:flex gap-8 m-5 lg:m-10 font-rubik mb-[1200px] relative pt-16"
-  >
-    <div
-      class="sm:w-[40%] lg:w-[25%] h-full w-full bg-white"
-      :class="{ 'lg:sticky lg:top-10 lg:left-10': isProductInfoInViewport }"
-    >
+  <section v-if="product" class="sm:flex gap-8 m-5 lg:m-10 font-rubik mb-[1200px] relative pt-16">
+    <div class="sm:w-[40%] lg:w-[25%] h-full w-full bg-white"
+      :class="{ 'lg:sticky lg:top-10 lg:left-10': isProductInfoInViewport }">
       <Carousel :items-to-show="1">
         <Slide v-for="(image, key) in product?.images" :key="key" class="">
           <img :src="image.url" class="rounded-md object-cover aspect-[4/3" />
@@ -65,6 +74,7 @@ definePageMeta({
       </Carousel>
     </div>
 
+    <!-- product info -->
     <div class="sm:w-[50%]" ref="productInfo">
       <h2 class="text-2xl font-semibold">{{ product?.name }}</h2>
       <div>
@@ -80,14 +90,8 @@ definePageMeta({
           <template v-for="variant in product.variants" :key="variant.id">
             <label
               class="font-medium px-[0.8em] py-[0.4em] min-w-[50px] text-sm text-center rounded-xl hover:cursor-pointer"
-              :class="{ 'bg-slate-200': variant.id === seletedVariant }"
-            >
-              <input
-                type="radio"
-                :value="variant.id"
-                v-model="seletedVariant"
-                class="hidden w-full h-full"
-              />
+              :class="{ 'bg-slate-200': variant.id === seletedVariant }">
+              <input type="radio" :value="variant.id" v-model="seletedVariant" class="hidden w-full h-full" />
               {{ variant.value }}
             </label>
           </template>
@@ -174,5 +178,86 @@ definePageMeta({
         cursus,
       </p>
     </div>
+    <!-- end of product info -->
   </section>
+  <!-- product reviews section -->
+  <section>
+    <div v-if="reviews" class="sm:w-[45%] mx-auto">
+      <template v-for="review in  reviews " :key="review.id">
+        <div class="border-b py-3">
+          <div>
+            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
+            <p>{{ formatDate(review.created_at) }}</p>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div class="w-10 h-10 overflow-hidden rounded-full">
+              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+            </div>
+            <p class="font-medium">
+              {{ review.user_name }}
+            </p>
+          </div>
+          <div class="mt-2">
+            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
+            <p>{{ review.text }}</p>
+          </div>
+        </div>
+        <div class="border-b py-3">
+          <div>
+            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
+            <p>{{ formatDate(review.created_at) }}</p>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div class="w-10 h-10 overflow-hidden rounded-full">
+              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+            </div>
+            <p class="font-medium">
+              {{ review.user_name }}
+            </p>
+          </div>
+          <div class="mt-2">
+            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
+            <p>{{ review.text }}</p>
+          </div>
+        </div>
+        <div class="border-b py-3">
+          <div>
+            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
+            <p>{{ formatDate(review.created_at) }}</p>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div class="w-10 h-10 overflow-hidden rounded-full">
+              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+            </div>
+            <p class="font-medium">
+              {{ review.user_name }}
+            </p>
+          </div>
+          <div class="mt-2">
+            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
+            <p>{{ review.text }}</p>
+          </div>
+        </div>
+        <div class="border-b py-3">
+          <div>
+            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
+            <p>{{ formatDate(review.created_at) }}</p>
+          </div>
+          <div class="flex gap-3 items-center">
+            <div class="w-10 h-10 overflow-hidden rounded-full">
+              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+            </div>
+            <p class="font-medium">
+              {{ review.user_name }}
+            </p>
+          </div>
+          <div class="mt-2">
+            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
+            <p>{{ review.text }}</p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </section>
+  <!-- end of product reviews section -->
 </template>

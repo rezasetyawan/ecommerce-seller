@@ -4039,8 +4039,6 @@ export default eventHandler(async (event) => {
 
     try {
 
-        console.log(query)
-
         let city: City | undefined = undefined
 
         if (cityId) {
@@ -4050,8 +4048,6 @@ export default eventHandler(async (event) => {
         if (query.search) {
             city = dataSource.rajaongkir.results.filter(item => {
                 const cityName = item.type + ' ' + item.city_name
-
-                console.log(cityName)
                 return cityName.toLowerCase().includes(query.search.toLocaleLowerCase())
             })[0]
         }

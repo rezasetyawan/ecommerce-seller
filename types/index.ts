@@ -46,6 +46,7 @@ interface Order {
     | "CANCELLED"
     | "FINISHED";
     order_items: OrderItem[];
+    unreviewed_product_counts: number
 }
 
 interface OrderDetail {

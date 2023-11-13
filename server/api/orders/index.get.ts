@@ -1,8 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import { OrderItem, Order } from '~/types'
 
-
-
 interface ApiResponse {
     data: {
         orders: Order[]
@@ -24,6 +22,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
     try {
         let queryBuilder = client.from('orders').select('id, created_at, total, status')
 
+        // TODO: IF USER QUERY NOT EXIST CHECK USER ROLE FIRST BEFORE GETTING ORDERS DATA, IF ROLE NOT AUTHORIZED DONT ALLOW TO GET DATA
         if (query.user) {
             queryBuilder = queryBuilder.eq('user_id', query.user)
         }
@@ -34,6 +33,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
         }
 
         const orders = await Promise.all(data.map(async (item) => {
+            let unReviewedProductCounts = 0
             const { data: order_products } = await client.from('order_products').select('variant_id, quantity').eq('order_id', item.id)
 
             if (order_products) {
@@ -51,8 +51,15 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                         price: variant ? variant.price : 0,
                         image_url: image ? image.url : '',
                         variant: variant ? variant.value : '',
-                        slug: product ? product.slug : ''
+                        slug: product ? product.slug : '',
                     } as OrderItem
+                }))
+
+                await Promise.all(products.map(async (product) => {
+                    const { data } = await client.from('reviews').select('id').eq('order_id', item.id).eq('product_id', product.id).eq('user_id', query.user).single()
+
+                    if (data) return
+                    unReviewedProductCounts += 1
                 }))
 
                 return {
@@ -61,6 +68,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                     total: item ? item.total : 0,
                     status: item ? item.status : 'PENDING',
                     order_items: products,
+                    unreviewed_product_counts: unReviewedProductCounts
                 }
             }
         }))

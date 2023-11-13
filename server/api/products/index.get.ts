@@ -2,7 +2,7 @@ import { serverSupabaseClient } from '#supabase/server'
 // import { SupabaseClient } from '@supabase/supabase-js';
 
 interface Product {
-    id: number
+    id: string
     name: string
     sold: number
     price?: number
@@ -10,6 +10,7 @@ interface Product {
     category?: string
     image_url?: string
     slug: string
+    rating?: string[] | []
 }
 
 interface ProductSnapshots {
@@ -26,8 +27,6 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const query: Query = getQuery(event)
 
     try {
-        // const { data, error } = await client.from('products').select('id, name, sold, category_id, slug').ilike('name', `%${query.search}%`)
-
         let queryBuilder = client.from('products').select('id, name, sold, category_id, slug')
 
         if (query.search) {
@@ -35,7 +34,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
         }
 
         const { data, error } = await queryBuilder
-        
+
         if (error || !data.length) {
             return { data: [] }
         }
@@ -46,12 +45,14 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             const { data: image } = await client.from('product_images').select('url').eq('product_id', data.id).single()
             const { data: categories } = await client.from('categories').select('name').eq('id', data.category_id)
             const { data: prices } = await client.from('variants').select('price').eq('product_id', data.id).eq('is_default', true)
+            const { data: rating } = await client.from('reviews').select('rating').eq('product_id', data.id)
 
             return {
                 ...data,
                 price: prices ? prices[0].price : NaN,
                 category: categories ? categories[0].name : '',
                 image_url: image ? image.url : '',
+                rating: rating?.map(r => r.rating)
             }
         }))
 

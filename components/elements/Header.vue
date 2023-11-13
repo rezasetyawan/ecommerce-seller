@@ -36,7 +36,7 @@ const routes = [
 </script>
 <template>
   <header
-    class="flex gap-2 items-center p-3 font-rubik border-b lg:justify-between lg:px-8 fixed top-0 bg-white w-full dark:bg-black"
+    class="flex gap-2 items-center p-3 font-rubik border-b z-[3000] lg:justify-between lg:px-8 fixed top-0 bg-white w-full dark:bg-black"
   >
     <Menu class="lg:hidden" @click="sheetOpen = !sheetOpen" />
     <h1 class="text-lg lg:text-2xl font-semibold">Ini Toko</h1>

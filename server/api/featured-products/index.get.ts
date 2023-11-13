@@ -10,6 +10,7 @@ interface Product {
     category?: string
     image_url?: string
     slug: string
+    rating?: string[] | []
 }
 
 interface ProductSnapshots {
@@ -32,12 +33,14 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             const { data: image } = await client.from('product_images').select('url').eq('product_id', data.id).single()
             const { data: categories } = await client.from('categories').select('name').eq('id', data.category_id)
             const { data: prices } = await client.from('variants').select('price').eq('product_id', data.id).eq('is_default', true)
+            const { data: rating } = await client.from('reviews').select('rating').eq('product_id', data.id)
 
             return {
                 ...data,
                 price: prices ? prices[0].price : NaN,
                 category: categories ? categories[0].name : '',
                 image_url: image ? image.url : '',
+                rating: rating?.map(r => r.rating)
             }
         }))
 

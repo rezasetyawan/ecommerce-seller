@@ -33,7 +33,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
         }
 
         if (!data.length) {
-            return { data: {} }
+            return { data: {}, error: true, errorMessage: 'product not found' }
         }
 
         const productData = data[0] as { id: string, name: string, description: string, category_id: string }

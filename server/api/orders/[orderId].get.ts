@@ -1,8 +1,6 @@
 import { serverSupabaseClient } from '#supabase/server'
 import { OrderDetail, OrderItem } from '~/types'
 
-
-
 interface ApiResponse {
     data: OrderDetail
 }
