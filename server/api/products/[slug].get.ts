@@ -11,7 +11,7 @@ interface Product {
     category: string
     stocks: number
     images: { id: string, url: string }[]
-    variants: { id: string, value: string, price: number, stocks: number, is_default: boolean }[]
+    variants: { id: string, value: string, price: number, stocks: number, is_default: boolean, weight: string }[]
 }
 
 
@@ -39,7 +39,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
         const productData = data[0] as { id: string, name: string, description: string, category_id: string }
 
         const { data: categories } = await client.from('categories').select('name').eq('id', productData.category_id)
-        const { data: variants } = await client.from('variants').select('id, value, price, is_default, stocks').eq('product_id', productData.id)
+        const { data: variants } = await client.from('variants').select('id, value, price, is_default, stocks, weight').eq('product_id', productData.id)
         // const { data: stocks } = await client.from('variants').select('stocks').eq('product_id',productData.id)
         const { data: images } = await client.from('product_images').select('id, url').eq('product_id', productData.id)
 

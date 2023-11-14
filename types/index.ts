@@ -1,5 +1,5 @@
 interface Product {
-    id: number
+    id: string
     name: string
     sold: number
     price?: number
@@ -12,16 +12,16 @@ interface Product {
 
 
 interface ProductDetail {
-    id: number,
+    id: string,
     name: string
     price: number
     description: string
-    category_id: number
+    category_id: string 
     sold: number
     category: string
     stocks: number
     images: { id: string, url: string }[]
-    variants: { id: string, value: string, price: number, stocks: number, is_default: boolean }[]
+    variants: { id: string, value: string, price: number, stocks: number, is_default: boolean, weight: string }[]
 }
 
 interface OrderItem {

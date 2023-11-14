@@ -24,6 +24,8 @@ import {
 } from "../../components/ui/table";
 import { Textarea } from "../../components/ui/textarea";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
+import { ArrowLeft } from "lucide-vue-next";
+import { addProduct } from "~/utils/useProduct"
 
 interface Variant {
   id: string;
@@ -103,33 +105,36 @@ const deleteVariantHandler = (id: string) => {
   }
 };
 
-const toRupiah = (price: number) => {
-  return "Rp. " + price.toLocaleString("id-ID");
-};
 
 const onImageChangeHandler = (event: Event) => {
   const target = event.target as HTMLInputElement;
+  let files: File[] = []
   if (target.files) {
     for (let i = 0; i < target.files.length; i++) {
-      images.value?.push(target.files[i]);
+      files.push(target.files[i]);
     }
   }
+  images.value = files
 };
 
-// const getImageUrls = async () => {
-//   try {
-//     if (images.value) {
-//       for (let i = 0; i < images.value?.length; i++) {
-//         const file = images.value[i];
-//       }
-//     }
-//   } catch (error) {}
-// };
+const getImageUrl = (image: File) => {
+  if (image) {
+    return URL.createObjectURL(image);
+  }
+};
 
 const onSubmitHandler = async () => {
   try {
     const transformedVariants = variants.value.map((variant) => {
-      return { ...variant, weight: variant.weight?.toString() };
+      return {
+        id: variant.id,
+        value: variant.value,
+        price: variant.price as number,
+        stocks: variant.stocks as number,
+        is_default: variant.is_default,
+        product_id: variant.product_id,
+        weight: variant.weight?.toString() as string
+      };
     });
 
     const imagesUrl = await Promise.all(
@@ -151,48 +156,45 @@ const onSubmitHandler = async () => {
       };
     });
 
-    const { error } = await useFetch("/api/products", {
-      method: "POST",
-      body: {
-        ...product.value,
-        images: productImages,
-        variants: transformedVariants,
-      },
-    });
 
-    if (error) {
-      throw new Error(error.value?.message);
-    }
-  } catch (error) {}
+    await addProduct(supabase, {
+      ...product.value,
+      images: productImages,
+      variants: transformedVariants
+    })
+
+    // const { error } = await useFetch("/api/products", {
+    //   method: "POST",
+    //   body: {
+    //     ...product.value,
+    //     images: productImages,
+    //     variants: transformedVariants,
+    //   },
+    // });
+
+    // if (error) {
+    //   throw new Error(error.value?.message);
+    // }
+  } catch (error: any) {
+    console.error(error.message)
+  }
 };
-
-watch(
-  variants,
-  () => {
-    console.log(variants.value);
-  },
-  { deep: true, immediate: true }
-);
 
 definePageMeta({
   layout: "my-layout",
 });
 </script>
 <template>
-  <section class="mx-20 xl:mx-48 my-20">
-    <h2 class="my-8 font-semibold text-2xl text-center">Add New Product</h2>
+  <section class="mx-5 lg:mx-20 xl:mx-48 my-20">
+    <NuxtLink :to="'/products'">
+      <ArrowLeft />
+    </NuxtLink>
+    <h2 class="my-8 font-semibold text-xl text-center lg:text-2xl">Add New Product</h2>
     <form @submit.prevent="onSubmitHandler">
-      <Label for="product_name">Product Name</Label>
-      <Input
-        type="text"
-        required
-        placeholder="Type here..."
-        name="product_name"
-        class="my-2"
-        v-model="product.name"
-      />
+      <Label class="text-sm lg:text-base">Product Name</Label>
+      <Input type="text" required placeholder="Type here..." class="my-2" v-model="product.name" />
 
-      <Label class="mt-4 mb-2">Category</Label>
+      <Label class="mt-6 mb-2 text-sm lg:text-base">Category</Label>
       <Select v-model="product.category_id" v-if="categories" required>
         <SelectTrigger class="w-[180px]">
           <SelectValue placeholder="Select category" />
@@ -200,93 +202,57 @@ definePageMeta({
         <SelectContent>
           <SelectGroup>
             <SelectLabel>Category</SelectLabel>
-            <template v-for="category in categories" :key="category.id"
-              ><SelectItem :value="category.id">{{
+            <template v-for="category in categories" :key="category.id">
+              <SelectItem :value="category.id">{{
                 category.name
-              }}</SelectItem></template
-            >
+              }}</SelectItem>
+            </template>
           </SelectGroup>
         </SelectContent>
       </Select>
 
-      <Label class="mt-4 mb-2">Product Description</Label>
-      <Textarea
-        name="product_description"
-        v-model="product.description"
-        required
-      />
+      <Label class="mt-6 mb-2 text-sm lg:text-base">Product Description</Label>
+      <Textarea name="product_description" v-model="product.description" required />
 
-      <Label for="product_images" class="mt-4 mb-2">Product Images</Label>
-      <Input
-        type="file"
-        accept="image/png, image/jpeg, image/jpg"
-        multiple
-        name="product_images"
-        @change="(event: Event) => onImageChangeHandler(event)"
-        required
-      />
+      <template v-for="(image, index) in images" :key="image">
+        <img v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3" />
+      </template>
 
-      <div>
-        <Table>
+
+      <Label for="product_images" class="mt-6 mb-2 text-sm lg:text-base">Product Images</Label>
+      <Input class="md:w-min" type="file" accept="image/png, image/jpeg, image/jpg" multiple name="product_images"
+        @change="(event: Event) => onImageChangeHandler(event)" required />
+
+      <div class="mt-5">
+        <Table class="overflow-x-scroll">
           <TableHeader>
-            <TableRow>
+            <TableRow class="text-sm">
               <TableHead>Variant</TableHead>
               <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead class="w-full">Weight (gr)</TableHead>
+              <TableHead>Stocks</TableHead>
+              <TableHead class="">Weight (gr)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-for="(variant, index) in variants" :key="index">
               <TableCell class="font-medium">
-                <Input
-                  class="w-fit"
-                  type="text"
-                  v-model="variant.value"
-                  required
-                />
+                <Input class="w-fit text-sm" type="text" v-model="variant.value" required />
               </TableCell>
-              <TableCell
-                ><Input
-                  class="w-fit"
-                  type="number"
-                  v-model="variant.price"
-                  required
-              /></TableCell>
-              <TableCell
-                ><Input
-                  class="w-40"
-                  type="number"
-                  v-model="variant.stocks"
-                  required
-                />
+              <TableCell><Input class="w-fit text-sm" type="number" v-model="variant.price" required /></TableCell>
+              <TableCell><Input class="text-sm w-28" type="number" v-model="variant.stocks" required />
               </TableCell>
-              <TableCell class="flex gap-3 items-center"
-                ><Input
-                  class="w-40"
-                  type="number"
-                  v-model="variant.weight"
-                  required
-                />
+              <TableCell class="flex gap-3 items-center justify-between">
+                <Input class="text-sm w-28" type="number" v-model="variant.weight" required />
 
-                <button
-                  class="p-3"
-                  type="button"
-                  @click="() => deleteVariantHandler(variant.id)"
-                >
-                  <X />
+                <button class="p-3" type="button" @click="() => deleteVariantHandler(variant.id)">
+                  <X class="w-4 h-4" />
                 </button>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
         <div class="flex justify-end">
-          <Button
-            @click="addNewVariantHandler"
-            type="button"
-            class="my-4 block px-5"
-            >+</Button
-          >
+          <Button @click="addNewVariantHandler" type="button" class="my-4 block px-5">+</Button>
         </div>
 
         <div class="">
@@ -296,3 +262,17 @@ definePageMeta({
     </form>
   </section>
 </template>
+<style scoped>
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+</style>

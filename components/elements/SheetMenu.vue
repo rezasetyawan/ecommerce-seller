@@ -28,7 +28,7 @@ const props = defineProps<SheetMenuProps>();
     <!-- <SheetTrigger as-child>
       <Button variant="outline"> Open </Button>
     </SheetTrigger> -->
-    <SheetContent side="left" class="w-full sm:max-w-sm">
+    <SheetContent side="left" class="w-full mt-14 sm:max-w-sm">
       <SheetHeader>
         <SheetTitle>Ini Toko</SheetTitle>
         <!-- <SheetDescription>

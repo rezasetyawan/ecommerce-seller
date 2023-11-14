@@ -4,6 +4,8 @@ import { Carousel, Pagination, Slide } from "vue3-carousel";
 import "vue3-carousel/dist/carousel.css";
 import { ProductDetail } from "~/types";
 import { toRupiah, formatDate } from "~/utils"
+import StarRating from "~/components/elements/StarRating.vue"
+import { ArrowLeft } from "lucide-vue-next";
 
 interface ProductApiResponse {
   data: ProductDetail;
@@ -37,6 +39,86 @@ const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + produ
 const reviews = ref<Review[]>([])
 const reviewData = reviewsResponse.value as ReviewApiResponse
 reviews.value = reviewData.data
+reviews.value = [...reviews.value, {
+  id: 'dfdfdfdf',
+  text: 'gg bang',
+  created_at: '1699709547403',
+  variant: 'satu',
+  rating: '4',
+  user_name: 'asep'
+},
+{
+  id: 'ghghghgh',
+  text: 'awesome',
+  created_at: '1699709557403',
+  variant: 'dua',
+  rating: '5',
+  user_name: 'budi'
+},
+{
+  id: 'ijklmnop',
+  text: 'great job',
+  created_at: '1699709567403',
+  variant: 'tiga',
+  rating: '3',
+  user_name: 'charlie'
+},
+{
+  id: 'qrstuvwx',
+  text: 'nice work',
+  created_at: '1699709577403',
+  variant: 'empat',
+  rating: '2',
+  user_name: 'david'
+},
+{
+  id: 'yzabcdef',
+  text: 'fantastic',
+  created_at: '1699709587403',
+  variant: 'lima',
+  rating: '1',
+  user_name: 'eva'
+},
+{
+  id: '12345678',
+  text: 'gg bang',
+  created_at: '1699709597403',
+  variant: 'satu',
+  rating: '4',
+  user_name: 'asep'
+},
+{
+  id: 'abcdefgh',
+  text: 'awesome',
+  created_at: '1699709607403',
+  variant: 'dua',
+  rating: '5',
+  user_name: 'budi'
+},
+{
+  id: 'ijklmnop',
+  text: 'great job',
+  created_at: '1699709617403',
+  variant: 'tiga',
+  rating: '3',
+  user_name: 'charlie'
+},
+{
+  id: 'qrstuvwx',
+  text: 'nice work',
+  created_at: '1699709627403',
+  variant: 'empat',
+  rating: '2',
+  user_name: 'david'
+},
+{
+  id: 'yzabcdef',
+  text: 'fantastic',
+  created_at: '1699709637403',
+  variant: 'lima',
+  rating: '1',
+  user_name: 'eva'
+}]
 
 const seletedVariant = ref<string | undefined>("");
 const price = ref(product.value.price);
@@ -52,44 +134,87 @@ watch(seletedVariant, () => {
   )?.price as number;
 });
 
-const productInfo = ref<HTMLElement | null>(null);
+const productInfo = ref(null);
 const isProductInfoInViewport = useElementVisibility(productInfo);
 console.log(productInfo.value)
+console.log(isProductInfoInViewport.value)
+
+
+const totalRating = computed(() => {
+  return reviews.value
+    ? reviews.value.reduce((accumulator, currentValue) => {
+      return accumulator + parseInt(currentValue.rating)
+    }, 0)
+    : 0;
+})
+
+const getRatingPercentageAndCounts = (rating: string) => {
+  if (!reviews.value.length) {
+    return {
+      percentage: 0,
+      counts: 0
+    };
+  }
+
+  const ratingCounts = reviews.value.filter(review => {
+    return review.rating === rating;
+  }).length
+
+  const ratingPercentage = (ratingCounts / reviews.value.length) * 100;
+  return {
+    counts: ratingCounts.toFixed(0),
+    percentage: ratingPercentage.toFixed(0),
+  };
+};
+
+const RATINGS = ['1', '2', '3', '4', '5']
+const showFullDesc = ref(false)
+
 definePageMeta({
   layout: "my-layout",
 });
 </script>
 <template>
-  <section v-if="product" class="sm:flex gap-8 m-5 lg:m-10 font-rubik mb-[1200px] relative pt-16">
-    <div class="sm:w-[40%] lg:w-[25%] h-full w-full bg-white"
-      :class="{ 'lg:sticky lg:top-10 lg:left-10': isProductInfoInViewport }">
+  <div class="my-1 z-10 max-sm:mt-16 sm:absolute sm:top-6 lg:mx-8">
+    <NuxtLink :to="'/products'">
+      <ArrowLeft />
+    </NuxtLink>
+  </div>
+
+  <section v-if="product" class="sm:flex gap-8 m-5 sm:mx-10 lg:m-10 lg:mx-20 font-rubik relative border-b sm:pt-6">
+    <div class="sm:w-[40%] lg:w-[25%] h-full w-full bg-white">
       <Carousel :items-to-show="1">
         <Slide v-for="(image, key) in product?.images" :key="key" class="">
           <img :src="image.url" class="rounded-md object-cover aspect-[4/3" />
         </Slide>
         <template #addons>
-          <!-- <Navigation /> -->
-          <Pagination class="rounded" />
+          <Pagination />
         </template>
       </Carousel>
+
     </div>
 
     <!-- product info -->
-    <div class="sm:w-[50%]" ref="productInfo">
-      <h2 class="text-2xl font-semibold">{{ product?.name }}</h2>
-      <div>
+    <div class="mt-2 sm:w-[50%]" ref="productInfo">
+      <h2 class="text-lg font-semibold lg:text-2xl">{{ product?.name }}</h2>
+      <div class="flex items-center gap-2 text-sm lg:text-base">
         <p>{{ product.sold }} <span class="font-medium">Sold</span></p>
+        <span>•</span>
+        <div class="flex gap-3 items-center">
+          <StarRating :rating-value="1" :rating-count="1" class="mr-3" rating-size="1.6rem" />
+          <p>{{ totalRating ? (totalRating / reviews.length).toFixed(1) : 0 }} ({{ reviews.length }} rating)</p>
+        </div>
       </div>
       <div class="my-5">
-        <p class="text-2xl font-semibold">{{ toRupiah(price) }}</p>
+        <p class="text-lg font-semibold lg:text-2xl">{{ toRupiah(price) }}</p>
       </div>
 
       <div>
-        <p class="text-lg font-medium">Variants:</p>
-        <div class="flex gap-2 flex-wrap my-4">
+        <p class="text-base font-medium lg:text-lg">Variants:</p>
+        <div class="flex gap-2 flex-wrap my-2">
           <template v-for="variant in product.variants" :key="variant.id">
             <label
-              class="font-medium px-[0.8em] py-[0.4em] min-w-[50px] text-sm text-center rounded-xl hover:cursor-pointer"
+              class="font-medium px-[0.8em] py-[0.4em] min-w-[50px] text-xs text-center rounded-xl hover:cursor-pointer md:text-sm"
               :class="{ 'bg-slate-200': variant.id === seletedVariant }">
               <input type="radio" :value="variant.id" v-model="seletedVariant" class="hidden w-full h-full" />
               {{ variant.value }}
@@ -98,7 +223,7 @@ definePageMeta({
         </div>
       </div>
       <hr />
-      <p class="my-3 line-clamp-6">
+      <p class="my-3 text-sm" :class="{ 'line-clamp-6': !showFullDesc }">
         {{ product.description }} Lorem ipsum dolor sit amet, consectetur
         adipiscing elit. Sed id justo a mauris aliquet hendrerit. Nullam aliquet
         ex vel aliquet fermentum. Nam commodo hendrerit sapien, et consequat
@@ -177,86 +302,69 @@ definePageMeta({
         vel sollicitudin dolor finibus. Vivamus gravida, ipsum ut fermentum
         cursus,
       </p>
+      <button type="button" class="text-sm" @click="showFullDesc = !showFullDesc">{{ showFullDesc ? 'See less' : 'Seemore'
+      }}</button>
     </div>
     <!-- end of product info -->
   </section>
+
   <!-- product reviews section -->
   <section>
-    <div v-if="reviews" class="sm:w-[45%] mx-auto">
-      <template v-for="review in  reviews " :key="review.id">
-        <div class="border-b py-3">
-          <div>
-            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
-            <p>{{ formatDate(review.created_at) }}</p>
-          </div>
-          <div class="flex gap-3 items-center">
-            <div class="w-10 h-10 overflow-hidden rounded-full">
-              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
-            </div>
-            <p class="font-medium">
-              {{ review.user_name }}
+    <div v-if="reviews" class="mx-5 lg:mx-20 md:flex gap-10">
+      <!-- user rating -->
+      <div class="w-full max-md:border-b max-md:pb-4 md:w-min">
+        <h2 class="text-lg whitespace-nowrap font-medium lg:text-xl">Product Reviews</h2>
+        <div class="flex items-center gap-5 mt-3">
+          <StarRating :rating-value="1" :rating-count="1" class="mr-3" />
+          <div class="flex items-end">
+            <p class="text-2xl lg:text-6xl">
+              {{ totalRating ? (totalRating / reviews.length).toFixed(1) : 0 }}
             </p>
-          </div>
-          <div class="mt-2">
-            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
-            <p>{{ review.text }}</p>
+            <p class="text-slate-500 text-sm lg:text-base">/5</p>
           </div>
         </div>
-        <div class="border-b py-3">
-          <div>
-            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
-            <p>{{ formatDate(review.created_at) }}</p>
-          </div>
-          <div class="flex gap-3 items-center">
-            <div class="w-10 h-10 overflow-hidden rounded-full">
-              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+        <div class="text-sm mt-5">
+          <template v-for="(rating, index) in RATINGS.reverse()" :key="index">
+            <div class="w-full flex items-center gap-2">
+              <div class="flex gap-5 items-center">
+                <StarRating :rating-value="1" :rating-count="1" rating-size="1.4rem" />
+                <p>{{ rating }}</p>
+              </div>
+
+              <div class="w-full bg-black/20 rounded-lg h-1.5">
+                <div class="bg-black rounded-lg h-1.5"
+                  :style="{ width: `${getRatingPercentageAndCounts(rating).percentage}%` }">
+                </div>
+              </div>
+              <p>{{ getRatingPercentageAndCounts(rating).counts }}</p>
             </div>
-            <p class="font-medium">
-              {{ review.user_name }}
-            </p>
-          </div>
-          <div class="mt-2">
-            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
-            <p>{{ review.text }}</p>
-          </div>
+          </template>
         </div>
-        <div class="border-b py-3">
-          <div>
-            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
-            <p>{{ formatDate(review.created_at) }}</p>
-          </div>
-          <div class="flex gap-3 items-center">
-            <div class="w-10 h-10 overflow-hidden rounded-full">
-              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+      </div>
+
+      <!-- user reviews -->
+      <div class="w-full">
+        <template v-for="review in  reviews" :key="review.id">
+          <div class="border-b py-3 text-sm">
+            <div class="flex flex-wrap gap-28 items-center">
+              <StarRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
+              <p class="text-sm">{{ formatDate(review.created_at) }}</p>
             </div>
-            <p class="font-medium">
-              {{ review.user_name }}
-            </p>
-          </div>
-          <div class="mt-2">
-            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
-            <p>{{ review.text }}</p>
-          </div>
-        </div>
-        <div class="border-b py-3">
-          <div>
-            <StartRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
-            <p>{{ formatDate(review.created_at) }}</p>
-          </div>
-          <div class="flex gap-3 items-center">
-            <div class="w-10 h-10 overflow-hidden rounded-full">
-              <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+            <div class="flex gap-3 items-center mt-1">
+              <div class="w-8 h-8 overflow-hidden rounded-full lg:w-10 lg:h-10">
+                <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+              </div>
+              <p class="font-medium">
+                {{ review.user_name }}
+              </p>
             </div>
-            <p class="font-medium">
-              {{ review.user_name }}
-            </p>
+            <div class="mt-2 text-sm">
+              <p class="text-slate-500">Variant: {{ review.variant }}</p>
+              <p>{{ review.text }}</p>
+            </div>
           </div>
-          <div class="mt-2">
-            <p class="text-sm text-slate-500">Variant: {{ review.variant }}</p>
-            <p>{{ review.text }}</p>
-          </div>
-        </div>
-      </template>
+        </template>
+      </div>
     </div>
   </section>
   <!-- end of product reviews section -->

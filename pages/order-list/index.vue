@@ -65,7 +65,7 @@ definePageMeta({
 </script>
 <template>
   <section>
-    <section class="mx-20 my-20 space-y-5">
+    <section class="m-5 lg:mx-20 lg:my-10 space-y-2">
       <template v-for="order in orders" :key="order.id">
         <OrderItem
           :order="order"
