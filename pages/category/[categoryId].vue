@@ -20,6 +20,10 @@ const { data } = await useFetch('/api/categories/' + categoryId.value)
 const categoryApiResponse = data.value as CategoryApiResponse
 category.value = categoryApiResponse.data as Category
 
+if (!categoryApiResponse.data) {
+  useRouter().push('/404')
+}
+
 const editCategory = async () => {
     try {
         isLoading.value = true

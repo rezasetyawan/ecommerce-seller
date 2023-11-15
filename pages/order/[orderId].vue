@@ -15,6 +15,10 @@ const { data } = await useFetch("/api/orders/" + orderId.value);
 const apiResponse = data.value as ApiResponse;
 order.value = apiResponse.data;
 
+if (!apiResponse.data) {
+  useRouter().push('/404')
+}
+
 const getStatusMessage = (status: string) => {
   let statusMessage: string = "";
 

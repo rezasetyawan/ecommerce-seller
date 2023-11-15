@@ -14,10 +14,16 @@ export default eventHandler(async (event) => {
             return { errorMessage: 'Unauthorized' }
         }
 
+        const { data: orders } = await client.from('orders').select('id').eq('id', query.orderId)
+
+        if (!orders?.length || !orders) {
+            return { data: null, errorMessage: 'order not found' }
+        }
+
         const { data: reviews, error } = await client.from('reviews').select('product_id').eq('order_id', query.orderId).eq('user_id', query.user)
 
         if (error) {
-            return { errorMessage: error.message }
+            return { data: null, errorMessage: error.message }
         }
 
         if (!reviews.length) {
@@ -69,7 +75,7 @@ export default eventHandler(async (event) => {
             const { data, error } = await queryBuilder
 
             if (error) {
-                return { errorMessage: error.message }
+                return { data: null, errorMessage: error.message }
             }
 
             const variantIds = data?.map(d => {
@@ -101,7 +107,6 @@ export default eventHandler(async (event) => {
         }
 
     } catch (error: any) {
-
-        return { errorMessage: error.message }
+        return { data: null, errorMessage: error.message }
     }
 });

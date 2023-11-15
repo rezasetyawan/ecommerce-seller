@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightFromLine } from "lucide-vue-next";
+import { LogOut } from "lucide-vue-next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +60,7 @@ const signOutHandler = async () => {
       </div>
       <AlertDialog>
         <AlertDialogTrigger class="text-sm font-medium transition-colors hover:text-primary">
-          <ArrowRightFromLine />
+          Sign Out
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -6,6 +6,7 @@ interface ApiResponse {
 }
 
 interface ErrorResponse {
+    data: null;
     errorMessage: string
 }
 
@@ -24,7 +25,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
         let orderData: OrderDetail | null = null
 
         if (error) {
-            return { errorMessage: error.message }
+            return { data: null, errorMessage: error.message }
         }
 
         const { data: order_products } = await client.from('order_products').select('variant_id, quantity').eq('order_id', order.id)
@@ -82,6 +83,6 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
 
     } catch (error: any) {
 
-        return { errorMessage: error.message }
+        return { data: null, errorMessage: error.message }
     }
 });

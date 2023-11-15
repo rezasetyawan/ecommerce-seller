@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { cn } from "@/lib/utils";
-import { Menu, ArrowRightFromLine } from "lucide-vue-next";
+import { Menu, LogOut } from "lucide-vue-next";
 import SheetMenu from "./SheetMenu.vue";
 import {
   AlertDialog,
@@ -68,7 +68,7 @@ const signOutHandler = async () => {
 
       <AlertDialog>
         <AlertDialogTrigger class="text-sm font-medium">
-          <ArrowRightFromLine />
+          <LogOut/>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
