@@ -24,8 +24,8 @@ export default defineNuxtConfig({
     transpile: ['vue-sonner']
   },
   routeRules: {
-    '/web/v1/**': {
-        proxy: { to: "http://localhost:9300/web/v1/**", },
+    '/api/**': {
+        proxy: { to: process.env.APP_BASE_URL as string + '/api/**', },
     }
   }
 })
