@@ -13,11 +13,11 @@ const category = ref<Category>({
     name: ''
 })
 
+const { $toast } = useNuxtApp();
 const isLoading = ref(false)
 
-const onSubmitHandler = async () => {
+const addNewCategory = async () => {
     try {
-        // TODO: REPLACE CATEGORY WITH NEW DEFAULT VALUE (THE ID), BECAUSE IF USER WANT TO ADD MULTIPLE CATEGORY IT WILL THROW ERROR BECAUSE MAYBED IT WILL USE SAME ID AS PREVIOUSE ONE
         isLoading.value = true
         await useFetch('/api/categories', {
             method: 'POST',
@@ -29,10 +29,22 @@ const onSubmitHandler = async () => {
             name: ''
         }
 
+
+    } catch (error: any) {
+        throw new Error(error.message)
+    } finally {
         isLoading.value = false
-    } catch (error) {
-        console.error(error)
     }
+}
+
+const onSubmitHandler = async () => {
+    return $toast.promise(addNewCategory, {
+        loading: "Loading...",
+        success: (data) => {
+            return `Category added`;
+        },
+        error: (data: any) => (data.message ? `${data.message}` : "Failed to create category"),
+    });
 }
 
 definePageMeta({
@@ -41,13 +53,15 @@ definePageMeta({
 })
 </script>
 <template>
-    <!-- TODO: improve ux while add category kaya divideo bang fuid -->
+    <Toaster position="top-center" richColors />
+    <div class="my-3 max-auto">
+        <NuxtLink :to="'/categories'" class="p-3 flex items-center gap-1 text-sm lg:text-base">
+            <ArrowLeft />
+            <p>Add category</p>
+        </NuxtLink>
+    </div>
     <section class="px-5 max-w-sm mx-auto relative sm:py-10">
-        <div class="my-3 sm:absolute -left-14 top-8 w-min">
-            <NuxtLink :to="'/categories'" class="m-0 p-0">
-                <ArrowLeft />
-            </NuxtLink>
-        </div>
+        
         <form @submit.prevent="onSubmitHandler">
             <Input v-model="category.name" />
             <div class="flex justify-end mt-2">

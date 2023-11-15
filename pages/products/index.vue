@@ -2,28 +2,28 @@
 import { useDebounceFn } from "@vueuse/core";
 import { Search } from "lucide-vue-next";
 import {
-AlertDialog,
-AlertDialogAction,
-AlertDialogCancel,
-AlertDialogContent,
-AlertDialogDescription,
-AlertDialogFooter,
-AlertDialogHeader,
-AlertDialogTitle,
-AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import {
-Popover,
-PopoverContent,
-PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from '~/components/ui/popover';
 import {
-Table,
-TableBody,
-TableCell,
-TableHead,
-TableHeader,
-TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "~/components/ui/table";
 import { toRupiah } from "~/utils";
 import { deleteProduct } from "~/utils/useProduct";
@@ -98,8 +98,8 @@ const deleteProductHandler = async (productId: string) => {
   }
 }
 definePageMeta({
-    layout: 'my-layout',
-    middleware: 'seller'
+  layout: 'my-layout',
+  middleware: 'seller'
 })
 </script>
 <template>
@@ -109,7 +109,7 @@ definePageMeta({
         <form @submit.prevent="onSearchSubmit" class="flex items-center py-0.5 px-3 bg-slate-50 rounded-lg">
           <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <input
-            class="flex w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-sm"
             placeholder="Search products..." v-model="searchKey" @input="() => {
               productSuggestions = [];
               productSuggestionsLoading = true;
@@ -179,10 +179,12 @@ definePageMeta({
                 Actions
               </PopoverTrigger>
               <PopoverContent class="w-max space-y-1.5">
-                <div class="text-sm font-medium"><NuxtLink :to="'/product/edit/' + product.slug">Edit</NuxtLink></div>
+                <div class="font-medium text-xs lg:text-sm">
+                  <NuxtLink :to="'/product/edit/' + product.slug">Edit</NuxtLink>
+                </div>
                 <div>
                   <AlertDialog>
-                    <AlertDialogTrigger class="text-sm font-medium">
+                    <AlertDialogTrigger class="font-medium text-xs lg:text-sm">
                       Delete
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -199,8 +201,8 @@ definePageMeta({
                     </AlertDialogContent>
                   </AlertDialog>
                 </div>
-                <div class="text-sm font-medium">
-                  <NuxtLink :to="'/product/' + product.slug">View Detail</NuxtLink>
+                <div class="font-medium text-xs lg:text-sm">
+                  <NuxtLink :to="'/product/' + product.slug">Detail</NuxtLink>
                 </div>
               </PopoverContent>
             </Popover>

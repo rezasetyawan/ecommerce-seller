@@ -85,7 +85,7 @@ const signOutHandler = async () => {
       </AlertDialog>
     </nav>
   </header>
-  <SheetMenu :open="sheetOpen" :routes="routes" />
+  <SheetMenu :open="sheetOpen" :routes="routes" @route-click="sheetOpen = false"/>
 </template>
 <style scoped>
 html.dark {

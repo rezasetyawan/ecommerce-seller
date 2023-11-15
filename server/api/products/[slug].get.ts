@@ -16,7 +16,7 @@ interface Product {
 
 
 interface ProductSnapshots {
-    data: Product | {}
+    data: Product | null
     error?: boolean
     errorMessage?: string
 }
@@ -29,11 +29,11 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
         const { data, error } = await client.from('products').select('id, name, description, category_id, sold').eq('slug', slug)
 
         if (error) {
-            return { data: {}, error: true, errorMessage: error.message }
+            return { data: null, error: true, errorMessage: error.message }
         }
 
         if (!data.length) {
-            return { data: {}, error: true, errorMessage: 'product not found' }
+            return { data: null, error: true, errorMessage: 'product not found' }
         }
 
         const productData = data[0] as { id: string, name: string, description: string, category_id: string }
@@ -57,6 +57,6 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
 
         return { data: product }
     } catch (error: any) {
-        return { data: {}, error: true, errorMessage: error.message }
+        return { data: null, error: true, errorMessage: error.message }
     }
 });

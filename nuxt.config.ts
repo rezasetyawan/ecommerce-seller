@@ -20,4 +20,7 @@ export default defineNuxtConfig({
       SUPABASE_URL: process.env.SUPABASE_URL as string,
     }
   },
+  build: {
+    transpile: ['vue-sonner']
+  }
 })

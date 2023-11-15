@@ -36,93 +36,18 @@ const product = ref<ProductDetail>();
 const { data } = await useFetch(`/api/products/${slug.value}`, {
   method: "get",
 });
-const apiResponse = data.value as ProductApiResponse;
-product.value = apiResponse.data;
+const productResponse = data.value as ProductApiResponse;
+product.value = productResponse.data;
+
+if (!productResponse.data) {
+  useRouter().push('/404')
+}
 
 const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id)
 const reviews = ref<Review[]>([])
 const reviewData = reviewsResponse.value as ReviewApiResponse
 reviews.value = reviewData.data
-// reviews.value = [...reviews.value, {
-//   id: 'dfdfdfdf',
-//   text: 'gg bang',
-//   created_at: '1699709547403',
-//   variant: 'satu',
-//   rating: '4',
-//   user_name: 'asep'
-// },
-// {
-//   id: 'ghghghgh',
-//   text: 'awesome',
-//   created_at: '1699709557403',
-//   variant: 'dua',
-//   rating: '5',
-//   user_name: 'budi'
-// },
-// {
-//   id: 'ijklmnop',
-//   text: 'great job',
-//   created_at: '1699709567403',
-//   variant: 'tiga',
-//   rating: '3',
-//   user_name: 'charlie'
-// },
-// {
-//   id: 'qrstuvwx',
-//   text: 'nice work',
-//   created_at: '1699709577403',
-//   variant: 'empat',
-//   rating: '2',
-//   user_name: 'david'
-// },
-// {
-//   id: 'yzabcdef',
-//   text: 'fantastic',
-//   created_at: '1699709587403',
-//   variant: 'lima',
-//   rating: '1',
-//   user_name: 'eva'
-// },
-// {
-//   id: '12345678',
-//   text: 'gg bang',
-//   created_at: '1699709597403',
-//   variant: 'satu',
-//   rating: '4',
-//   user_name: 'asep'
-// },
-// {
-//   id: 'abcdefgh',
-//   text: 'awesome',
-//   created_at: '1699709607403',
-//   variant: 'dua',
-//   rating: '5',
-//   user_name: 'budi'
-// },
-// {
-//   id: 'ijklmnop',
-//   text: 'great job',
-//   created_at: '1699709617403',
-//   variant: 'tiga',
-//   rating: '3',
-//   user_name: 'charlie'
-// },
-// {
-//   id: 'qrstuvwx',
-//   text: 'nice work',
-//   created_at: '1699709627403',
-//   variant: 'empat',
-//   rating: '2',
-//   user_name: 'david'
-// },
-// {
-//   id: 'yzabcdef',
-//   text: 'fantastic',
-//   created_at: '1699709637403',
-//   variant: 'lima',
-//   rating: '1',
-//   user_name: 'eva'
-// }]
+
 
 const seletedVariant = ref<string | undefined>("");
 const price = ref(product.value.price);
@@ -195,8 +120,8 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
 }
 
 definePageMeta({
-    layout: 'my-layout',
-    middleware: 'seller'
+  layout: 'my-layout',
+  middleware: 'seller'
 })
 </script>
 <template>

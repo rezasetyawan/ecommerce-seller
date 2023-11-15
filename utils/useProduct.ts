@@ -91,6 +91,7 @@ interface UpdateProduct {
     updated_at: string
     description: string
     category_id: string
+    slug: string
 }
 const updateProduct = async (client: SupabaseClient, productId: string, updateData: UpdateProduct) => {
     try {
@@ -135,5 +136,19 @@ const addProductImageUrl = async (client: SupabaseClient, data: ProductImagesUrl
     }
 }
 
+const getProductCounts = async (client: SupabaseClient) => {
+    try {
+        const { data, error } = await client.from('products').select('id')
 
-export { addProduct, deleteProduct, updateProductVariants, updateProduct, deleteProductImageUrl, addProductImageUrl }
+        if (error) {
+            throw new Error(error.message)
+        }
+        return data.length
+
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+
+
+export { addProduct, deleteProduct, updateProductVariants, updateProduct, deleteProductImageUrl, addProductImageUrl, getProductCounts }

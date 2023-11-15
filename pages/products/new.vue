@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { X } from "lucide-vue-next";
+import { ArrowLeft, X } from "lucide-vue-next";
 import { nanoid } from "nanoid";
 import { addProductImage } from "~/utils/useImage";
+import { addProduct } from "~/utils/useProduct";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -24,8 +25,6 @@ import {
 } from "../../components/ui/table";
 import { Textarea } from "../../components/ui/textarea";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
-import { ArrowLeft } from "lucide-vue-next";
-import { addProduct } from "~/utils/useProduct"
 
 interface Variant {
   id: string;
@@ -49,11 +48,11 @@ interface Product {
 
 const supabase = useSupabaseClient();
 const config = useRuntimeConfig();
-
-const { data: categorySnapshot } = await useFetch("/api/categories");
+const { $toast } = useNuxtApp();
+const isLoading = ref(false)
 
 const categories = ref<{ id: string; name: string }[] | []>([]);
-
+const { data: categorySnapshot } = await useFetch("/api/categories");
 if (categorySnapshot.value) {
   categories.value = categorySnapshot.value.data;
 }
@@ -82,7 +81,7 @@ const variants = ref<Variant[]>([
 
 const images = ref<File[]>([]);
 
-const addNewVariantHandler = () => {
+const addNewVariantFieldHandler = () => {
   variants.value = [
     ...variants.value,
     {
@@ -97,7 +96,7 @@ const addNewVariantHandler = () => {
   ];
 };
 
-const deleteVariantHandler = (id: string) => {
+const deleteVariantFieldHandler = (id: string) => {
   const index = variants.value?.findIndex((variant) => variant.id === id);
 
   if (index !== -1 && index !== undefined) {
@@ -105,7 +104,7 @@ const deleteVariantHandler = (id: string) => {
   }
 };
 
-
+// handle input images change
 const onImageChangeHandler = (event: Event) => {
   const target = event.target as HTMLInputElement;
   let files: File[] = []
@@ -117,22 +116,21 @@ const onImageChangeHandler = (event: Event) => {
   images.value = files
 };
 
+// get image url from existed image file
 const getImageUrl = (image: File) => {
   if (image) {
     return URL.createObjectURL(image);
   }
 };
 
-const onSubmitHandler = async () => {
+const createNewProduct = async () => {
   try {
+    isLoading.value = true
     const transformedVariants = variants.value.map((variant) => {
       return {
-        id: variant.id,
-        value: variant.value,
+        ...variant,
         price: variant.price as number,
         stocks: variant.stocks as number,
-        is_default: variant.is_default,
-        product_id: variant.product_id,
         weight: variant.weight?.toString() as string
       };
     });
@@ -156,36 +154,67 @@ const onSubmitHandler = async () => {
       };
     });
 
-
     await addProduct(supabase, {
       ...product.value,
       images: productImages,
       variants: transformedVariants
     })
 
-    // const { error } = await useFetch("/api/products", {
-    //   method: "POST",
-    //   body: {
-    //     ...product.value,
-    //     images: productImages,
-    //     variants: transformedVariants,
-    //   },
-    // });
-
-    // if (error) {
-    //   throw new Error(error.value?.message);
-    // }
+    resetAllField()
   } catch (error: any) {
-    console.error(error.message)
+    throw new Error(error.message)
+  } finally {
+    isLoading.value = false
   }
 };
 
+const onSubmitHandler = () => {
+  return $toast.promise(createNewProduct, {
+    loading: "Loading...",
+    success: (data) => {
+      return `Product added`;
+    },
+    error: (data: any) => (data.message ? `${data.message}` : "Failed to add product"),
+  });
+}
+
+const resetAllField = () => {
+  product.value = {
+    id: nanoid(16),
+    name: "",
+    description: "",
+    category_id: "",
+    sold: 0,
+    created_at: Date.now().toString(),
+    updated_at: Date.now().toString(),
+  }
+
+  variants.value = [
+    {
+      id: nanoid(16),
+      value: "",
+      price: undefined,
+      stocks: undefined,
+      is_default: true,
+      product_id: product.value.id,
+      weight: undefined,
+    },
+  ]
+
+  images.value = []
+
+  let inputImages: HTMLInputElement | null;
+  inputImages = document.getElementById("inputImages") as HTMLInputElement;
+  inputImages.value = ''
+}
+
 definePageMeta({
-    layout: 'my-layout',
-    middleware: 'seller'
+  layout: 'my-layout',
+  middleware: 'seller'
 })
 </script>
 <template>
+  <Toaster position="top-center" richColors />
   <section class="mx-5 lg:mx-20 xl:mx-48 my-20">
     <NuxtLink :to="'/products'">
       <ArrowLeft />
@@ -197,8 +226,8 @@ definePageMeta({
 
       <Label class="mt-6 mb-2 text-sm lg:text-base">Category</Label>
       <Select v-model="product.category_id" v-if="categories" required>
-        <SelectTrigger class="w-[180px]">
-          <SelectValue placeholder="Select category" />
+        <SelectTrigger class="w-fit">
+          <SelectValue placeholder="Select category" class="mr-2" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -215,14 +244,13 @@ definePageMeta({
       <Label class="mt-6 mb-2 text-sm lg:text-base">Product Description</Label>
       <Textarea name="product_description" v-model="product.description" required />
 
-      <template v-for="(image, index) in images" :key="image">
+      <template v-for="(image, index) in images" :key="index">
         <img v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3" />
       </template>
 
-
       <Label for="product_images" class="mt-6 mb-2 text-sm lg:text-base">Product Images</Label>
       <Input class="md:w-min" type="file" accept="image/png, image/jpeg, image/jpg" multiple name="product_images"
-        @change="(event: Event) => onImageChangeHandler(event)" required />
+        @change="(event: Event) => onImageChangeHandler(event)" required id="inputImages" />
 
       <div class="mt-5">
         <Table class="overflow-x-scroll">
@@ -245,7 +273,7 @@ definePageMeta({
               <TableCell class="flex gap-3 items-center justify-between">
                 <Input class="text-sm w-28" type="number" v-model="variant.weight" required />
 
-                <button class="p-3" type="button" @click="() => deleteVariantHandler(variant.id)">
+                <button class="p-3" type="button" @click="() => deleteVariantFieldHandler(variant.id)">
                   <X class="w-4 h-4" />
                 </button>
               </TableCell>
@@ -253,11 +281,11 @@ definePageMeta({
           </TableBody>
         </Table>
         <div class="flex justify-end">
-          <Button @click="addNewVariantHandler" type="button" class="my-4 block px-5">+</Button>
+          <Button @click="addNewVariantFieldHandler" type="button" class="my-4 block px-5">+</Button>
         </div>
 
         <div class="">
-          <Button type="submit" class="w-full mt-16">Submit</Button>
+          <Button type="submit" class="w-full mt-16" :disabled="isLoading">Submit</Button>
         </div>
       </div>
     </form>

@@ -168,9 +168,9 @@ const getStatusMessage = (status: string) => {
                       receiptNumber: receiptNumber,
                     })
                     ">
-                    <Input type="text" v-model="receiptNumber" />
+                    <Input type="text" v-model="receiptNumber" required />
                     <div class="flex justify-end">
-                      <Button class="text-xs lg:text-sm" type="submit" size="xs">Send</Button>
+                      <Button class="text-xs lg:text-sm" type="submit" size="sm">Send</Button>
                     </div>
                   </form>
                 </DialogHeader>
