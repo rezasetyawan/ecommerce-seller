@@ -181,8 +181,9 @@ const onSubmitHandler = async () => {
 };
 
 definePageMeta({
-  layout: "my-layout",
-});
+    layout: 'my-layout',
+    middleware: 'seller'
+})
 </script>
 <template>
   <section class="mx-5 lg:mx-20 xl:mx-48 my-20">

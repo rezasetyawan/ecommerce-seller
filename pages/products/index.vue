@@ -98,8 +98,9 @@ const deleteProductHandler = async (productId: string) => {
   }
 }
 definePageMeta({
-  layout: "my-layout",
-});
+    layout: 'my-layout',
+    middleware: 'seller'
+})
 </script>
 <template>
   <section class="m-3 md:m-10 md:mx-20">

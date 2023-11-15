@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { cn } from "@/lib/utils";
-import { Menu } from "lucide-vue-next";
+import { Menu, ArrowRightFromLine } from "lucide-vue-next";
 import SheetMenu from "./SheetMenu.vue";
-// import { Toggle } from "../ui/toggle";
-// import { useDark, useToggle } from "@vueuse/core";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 
-// const isDark = useDark();
-
-// const toggleDarkMode = useToggle(isDark);
-
-const sheetOpen = ref<boolean>(false);
+const supabase = useSupabaseClient()
+const sheetOpen = ref(false);
 const routes = [
   {
     href: `/`,
@@ -33,25 +40,49 @@ const routes = [
     active: false,
   },
 ];
+
+const signOutHandler = async () => {
+  try {
+
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      throw new Error(error.message)
+    }
+    useRouter().push('/signin')
+  } catch (error) {
+
+  }
+}
 </script>
 <template>
   <header
-    class="flex gap-2 items-center p-3 py-4 w-full font-rubik border-b z-[3000] h-14 lg:justify-between lg:px-8 fixed top-0 bg-white dark:bg-black"
-  >
+    class="flex gap-2 items-center p-3 py-4 w-full font-rubik border-b z-[1000] h-14 lg:justify-between lg:px-8 fixed top-0 bg-white dark:bg-black">
     <Menu class="lg:hidden" @click="sheetOpen = !sheetOpen" />
     <h1 class="text-lg lg:text-2xl font-semibold">Ini Toko</h1>
 
     <nav class="gap-5 items-center hidden lg:flex">
       <template v-for="route in routes" :key="route.href">
-        <NuxtLink
-          :to="route.href"
-          :class="
-            cn('text-sm font-medium transition-colors hover:text-primary')
-          "
-          >{{ route.label }}</NuxtLink
-        >
+        <NuxtLink :to="route.href" :class="cn('text-sm font-medium transition-colors hover:text-primary')
+          ">{{ route.label }}</NuxtLink>
       </template>
-      <!-- <Toggle @click="toggleDarkMode()">{{ isDark ? "Light" : "Dark" }}</Toggle> -->
+
+      <AlertDialog>
+        <AlertDialogTrigger class="text-sm font-medium">
+          <ArrowRightFromLine />
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure want to sign out?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction @click="signOutHandler">Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   </header>
   <SheetMenu :open="sheetOpen" :routes="routes" />

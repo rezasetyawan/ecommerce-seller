@@ -45,8 +45,9 @@ const getStatusMessage = (status: string) => {
 };
 
 definePageMeta({
-  layout: "my-layout",
-});
+    layout: 'my-layout',
+    middleware: 'seller'
+})
 </script>
 <template>
   <div class="mx-1 sm:mx-10 md:mx-2 md:absolute lg:mx-48">

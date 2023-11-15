@@ -250,7 +250,8 @@ const setInputInitialValue = () => {
 };
 
 definePageMeta({
-    layout: 'my-layout'
+    layout: 'my-layout',
+    middleware: 'seller'
 })
 </script>
 <template>

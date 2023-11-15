@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
+Sheet,
+SheetContent,
+SheetHeader,
+SheetTitle
 } from "../ui/sheet";
 
 interface SheetMenuProps {

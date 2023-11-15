@@ -3,9 +3,12 @@ import { useElementVisibility } from "@vueuse/core";
 import { Carousel, Pagination, Slide } from "vue3-carousel";
 import "vue3-carousel/dist/carousel.css";
 import { ProductDetail } from "~/types";
-import { toRupiah, formatDate } from "~/utils"
+import { toRupiah } from "~/utils"
 import StarRating from "~/components/elements/StarRating.vue"
 import { ArrowLeft } from "lucide-vue-next";
+import ReviewItem from '~/components/elements/review/ReviewItem.vue'
+import { nanoid } from "nanoid";
+import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 
 interface ProductApiResponse {
   data: ProductDetail;
@@ -24,6 +27,7 @@ interface ReviewApiResponse {
   data: Review[]
 }
 
+const supabase = useSupabaseClient()
 const slug = ref<string>();
 slug.value = useRoute().params.slug as string;
 
@@ -39,86 +43,86 @@ const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + produ
 const reviews = ref<Review[]>([])
 const reviewData = reviewsResponse.value as ReviewApiResponse
 reviews.value = reviewData.data
-reviews.value = [...reviews.value, {
-  id: 'dfdfdfdf',
-  text: 'gg bang',
-  created_at: '1699709547403',
-  variant: 'satu',
-  rating: '4',
-  user_name: 'asep'
-},
-{
-  id: 'ghghghgh',
-  text: 'awesome',
-  created_at: '1699709557403',
-  variant: 'dua',
-  rating: '5',
-  user_name: 'budi'
-},
-{
-  id: 'ijklmnop',
-  text: 'great job',
-  created_at: '1699709567403',
-  variant: 'tiga',
-  rating: '3',
-  user_name: 'charlie'
-},
-{
-  id: 'qrstuvwx',
-  text: 'nice work',
-  created_at: '1699709577403',
-  variant: 'empat',
-  rating: '2',
-  user_name: 'david'
-},
-{
-  id: 'yzabcdef',
-  text: 'fantastic',
-  created_at: '1699709587403',
-  variant: 'lima',
-  rating: '1',
-  user_name: 'eva'
-},
-{
-  id: '12345678',
-  text: 'gg bang',
-  created_at: '1699709597403',
-  variant: 'satu',
-  rating: '4',
-  user_name: 'asep'
-},
-{
-  id: 'abcdefgh',
-  text: 'awesome',
-  created_at: '1699709607403',
-  variant: 'dua',
-  rating: '5',
-  user_name: 'budi'
-},
-{
-  id: 'ijklmnop',
-  text: 'great job',
-  created_at: '1699709617403',
-  variant: 'tiga',
-  rating: '3',
-  user_name: 'charlie'
-},
-{
-  id: 'qrstuvwx',
-  text: 'nice work',
-  created_at: '1699709627403',
-  variant: 'empat',
-  rating: '2',
-  user_name: 'david'
-},
-{
-  id: 'yzabcdef',
-  text: 'fantastic',
-  created_at: '1699709637403',
-  variant: 'lima',
-  rating: '1',
-  user_name: 'eva'
-}]
+// reviews.value = [...reviews.value, {
+//   id: 'dfdfdfdf',
+//   text: 'gg bang',
+//   created_at: '1699709547403',
+//   variant: 'satu',
+//   rating: '4',
+//   user_name: 'asep'
+// },
+// {
+//   id: 'ghghghgh',
+//   text: 'awesome',
+//   created_at: '1699709557403',
+//   variant: 'dua',
+//   rating: '5',
+//   user_name: 'budi'
+// },
+// {
+//   id: 'ijklmnop',
+//   text: 'great job',
+//   created_at: '1699709567403',
+//   variant: 'tiga',
+//   rating: '3',
+//   user_name: 'charlie'
+// },
+// {
+//   id: 'qrstuvwx',
+//   text: 'nice work',
+//   created_at: '1699709577403',
+//   variant: 'empat',
+//   rating: '2',
+//   user_name: 'david'
+// },
+// {
+//   id: 'yzabcdef',
+//   text: 'fantastic',
+//   created_at: '1699709587403',
+//   variant: 'lima',
+//   rating: '1',
+//   user_name: 'eva'
+// },
+// {
+//   id: '12345678',
+//   text: 'gg bang',
+//   created_at: '1699709597403',
+//   variant: 'satu',
+//   rating: '4',
+//   user_name: 'asep'
+// },
+// {
+//   id: 'abcdefgh',
+//   text: 'awesome',
+//   created_at: '1699709607403',
+//   variant: 'dua',
+//   rating: '5',
+//   user_name: 'budi'
+// },
+// {
+//   id: 'ijklmnop',
+//   text: 'great job',
+//   created_at: '1699709617403',
+//   variant: 'tiga',
+//   rating: '3',
+//   user_name: 'charlie'
+// },
+// {
+//   id: 'qrstuvwx',
+//   text: 'nice work',
+//   created_at: '1699709627403',
+//   variant: 'empat',
+//   rating: '2',
+//   user_name: 'david'
+// },
+// {
+//   id: 'yzabcdef',
+//   text: 'fantastic',
+//   created_at: '1699709637403',
+//   variant: 'lima',
+//   rating: '1',
+//   user_name: 'eva'
+// }]
 
 const seletedVariant = ref<string | undefined>("");
 const price = ref(product.value.price);
@@ -136,8 +140,6 @@ watch(seletedVariant, () => {
 
 const productInfo = ref(null);
 const isProductInfoInViewport = useElementVisibility(productInfo);
-console.log(productInfo.value)
-console.log(isProductInfoInViewport.value)
 
 
 const totalRating = computed(() => {
@@ -170,9 +172,32 @@ const getRatingPercentageAndCounts = (rating: string) => {
 const RATINGS = ['1', '2', '3', '4', '5']
 const showFullDesc = ref(false)
 
+
+const { data: { user } } = await supabase.auth.getUser()
+console.log(user)
+
+const onSubmitReplyHandler = async (reviewId: string, text: string) => {
+  try {
+    const replyData = {
+      id: nanoid(20),
+      text: text,
+      review_id: reviewId,
+      created_at: Date.now().toString()
+    }
+    const { data } = await useFetch('/api/product-reviews/reply/' + reviewId, {
+      method: 'POST',
+      body: replyData
+    })
+    console.log(data.value)
+  } catch (error) {
+    console.error('error')
+  }
+}
+
 definePageMeta({
-  layout: "my-layout",
-});
+    layout: 'my-layout',
+    middleware: 'seller'
+})
 </script>
 <template>
   <div class="my-1 z-10 max-sm:mt-16 sm:absolute sm:top-6 lg:mx-8">
@@ -223,7 +248,7 @@ definePageMeta({
         </div>
       </div>
       <hr />
-      <p class="my-3 text-sm" :class="{ 'line-clamp-6': !showFullDesc }">
+      <p class="mt-3 text-sm" :class="{ 'line-clamp-6': !showFullDesc }">
         {{ product.description }} Lorem ipsum dolor sit amet, consectetur
         adipiscing elit. Sed id justo a mauris aliquet hendrerit. Nullam aliquet
         ex vel aliquet fermentum. Nam commodo hendrerit sapien, et consequat
@@ -302,7 +327,8 @@ definePageMeta({
         vel sollicitudin dolor finibus. Vivamus gravida, ipsum ut fermentum
         cursus,
       </p>
-      <button type="button" class="text-sm" @click="showFullDesc = !showFullDesc">{{ showFullDesc ? 'See less' : 'Seemore'
+      <button type="button" class="text-sm mb-5" @click="showFullDesc = !showFullDesc">{{ showFullDesc ? 'See less' :
+        'Seemore'
       }}</button>
     </div>
     <!-- end of product info -->
@@ -310,7 +336,7 @@ definePageMeta({
 
   <!-- product reviews section -->
   <section>
-    <div v-if="reviews" class="mx-5 lg:mx-20 md:flex gap-10">
+    <div v-if="reviews" class="mx-5 mb-96 lg:mx-20 md:flex gap-10">
       <!-- user rating -->
       <div class="w-full max-md:border-b max-md:pb-4 md:w-min">
         <h2 class="text-lg whitespace-nowrap font-medium lg:text-xl">Product Reviews</h2>
@@ -345,24 +371,7 @@ definePageMeta({
       <!-- user reviews -->
       <div class="w-full">
         <template v-for="review in  reviews" :key="review.id">
-          <div class="border-b py-3 text-sm">
-            <div class="flex flex-wrap gap-28 items-center">
-              <StarRating :read-only="true" :rating-value="+review.rating" rating-size="1.5rem" />
-              <p class="text-sm">{{ formatDate(review.created_at) }}</p>
-            </div>
-            <div class="flex gap-3 items-center mt-1">
-              <div class="w-8 h-8 overflow-hidden rounded-full lg:w-10 lg:h-10">
-                <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
-              </div>
-              <p class="font-medium">
-                {{ review.user_name }}
-              </p>
-            </div>
-            <div class="mt-2 text-sm">
-              <p class="text-slate-500">Variant: {{ review.variant }}</p>
-              <p>{{ review.text }}</p>
-            </div>
-          </div>
+          <ReviewItem :review="review" @submit-reply="(text) => onSubmitReplyHandler(review.id, text)" />
         </template>
       </div>
     </div>

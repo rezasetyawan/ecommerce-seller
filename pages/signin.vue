@@ -26,6 +26,10 @@ const onSubmitHandler = async () => {
     console.error(err);
   }
 };
+
+definePageMeta({
+  layout: 'default'
+})
 </script>
 <template>
   <section class="flex font-rubik justify-center items-center h-screen">

@@ -36,7 +36,8 @@ const onSubmitHandler = async () => {
 }
 
 definePageMeta({
-    layout: 'my-layout'
+    layout: 'my-layout',
+    middleware: 'seller'
 })
 </script>
 <template>
