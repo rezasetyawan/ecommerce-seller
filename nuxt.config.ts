@@ -22,5 +22,11 @@ export default defineNuxtConfig({
   },
   build: {
     transpile: ['vue-sonner']
+  },
+  routeRules: {
+    '/web/v1/**': {
+        proxy: { to: "http://localhost:9300/web/v1/**", },
+    }
   }
 })
+
