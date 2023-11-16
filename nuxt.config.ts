@@ -25,10 +25,9 @@ export default defineNuxtConfig({
     transpile: ['vue-sonner']
   },
   routeRules: {
-    '/api/**': {
-      proxy: { to: process.env.APP_BASE_URL as string + '/api/**', },
+    '/**': {
+      proxy: { to: process.env.APP_BASE_URL as string + '/**', headers: { 'Access-Control-Allow-Origin': '*' } },
     },
-    '/**': { headers: { 'Access-Control-Allow-Origin': '*' } },
   },
   webpack: {
     devMiddleware: {
