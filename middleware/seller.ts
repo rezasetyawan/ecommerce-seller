@@ -18,6 +18,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
             return
         }
 
+        return
     } catch (error) {
         throw new Error(error as any);
     }
