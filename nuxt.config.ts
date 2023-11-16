@@ -18,6 +18,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       SUPABASE_URL: process.env.SUPABASE_URL as string,
+      APP_BASE_URL: process.env.APP_BASE_URL as string,
     }
   },
   build: {
@@ -25,8 +26,16 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/api/**': {
-        proxy: { to: process.env.APP_BASE_URL as string + '/api/**', },
-    }
-  }
+      proxy: { to: process.env.APP_BASE_URL as string + '/api/**', },
+    },
+    '/**': { headers: { 'Access-Control-Allow-Origin': '*' } },
+  },
+  webpack: {
+    devMiddleware: {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+    },
+  },
 })
 

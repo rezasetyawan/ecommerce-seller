@@ -23,6 +23,7 @@ interface Query {
 
 export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const client = await serverSupabaseClient(event);
+    const config = useRuntimeConfig()
 
     const query: Query = getQuery(event)
 
@@ -56,7 +57,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             }
         }))
 
-        return { data: products }
+        return { data: products, app_base_url: config.public.APP_BASE_URL }
     } catch (error: any) {
         return { data: [] }
     }
