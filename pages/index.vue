@@ -8,7 +8,6 @@ import { toRupiah } from "~/utils";
 import { ScrollArea } from '~/components/ui/scroll-area'
 
 const supabase = useSupabaseClient()
-
 const totalRevenue = ref(0)
 totalRevenue.value = await getTotalRevenue(supabase)
 const productCounts = ref(0)
@@ -62,7 +61,7 @@ definePageMeta({
         <div class="flex gap-5 mt-5">
             <div class="p-3 rounded-lg shadow-sm border w-full space-y-2">
                 <h2 class="font-medium text-sm lg:text-base">Total Revenue</h2>
-                <p class="text-base font-semibold lg:text-xl">{{ toRupiah(totalRevenue) }}</p>
+                <p class="text-base font-semibold lg:text-xl">{{toRupiah( totalRevenue)}}</p>
             </div>
             <div class="p-3 rounded-lg shadow-sm border w-full space-y-2">
                 <h2 class="font-medium text-sm lg:text-base">Total Product</h2>

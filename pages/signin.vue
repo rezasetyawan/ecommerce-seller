@@ -19,7 +19,8 @@ const signInUser = async () => {
   try {
     isLoading.value = true
     const { data, error } = await supabase.auth.signInWithPassword(user.value);
-
+    
+    console.log(error?.message)
     if (error) {
       throw new Error(error.message);
     }
@@ -48,7 +49,7 @@ definePageMeta({
 </script>
 <template>
   <Toaster position="top-center" richColors />
-  <section class="flex font-rubik justify-center items-center h-screen">
+  <section class="flex font-rubik justify-center items-center h-screen max-md:mx-5">
     <form class="w-full md:max-w-sm" @submit.prevent="onSubmitHandler">
       <h1 class="font-semibold text-3xl my-10 text-center">SignIn</h1>
       <div class="relative">
