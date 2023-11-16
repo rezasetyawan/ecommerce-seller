@@ -27,6 +27,7 @@ interface ReviewApiResponse {
   data: Review[]
 }
 
+const { $toast } = useNuxtApp()
 const supabase = useSupabaseClient()
 const slug = ref<string>();
 slug.value = useRoute().params.slug as string;
@@ -109,13 +110,19 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
       review_id: reviewId,
       created_at: Date.now().toString()
     }
-    const { data } = await useFetch('/api/product-reviews/reply/' + reviewId, {
+    const { data, error } = await useFetch('/api/product-reviews/reply/' + reviewId, {
       method: 'POST',
       body: replyData
     })
-    console.log(data.value)
-  } catch (error) {
-    console.error('error')
+
+    if (error.value) {
+      throw new Error(error.value?.message)
+    }
+    
+    return $toast.success('Reply successfully')
+  } catch (error: any) {
+    return $toast.error(error.message ? `${error.message}` : "Failed to reply")
+
   }
 }
 
@@ -125,6 +132,7 @@ definePageMeta({
 })
 </script>
 <template>
+  <Toaster position="top-center" richColors />
   <div class="my-1 z-10 max-sm:mt-16 sm:absolute sm:top-6 lg:mx-8">
     <NuxtLink :to="'/products'">
       <ArrowLeft />

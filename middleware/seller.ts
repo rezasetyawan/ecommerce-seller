@@ -17,7 +17,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         if (to.path === '/signin') {
             return
         }
-
         return
     } catch (error) {
         throw new Error(error as any);

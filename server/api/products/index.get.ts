@@ -57,7 +57,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             }
         }))
 
-        return { data: products, app_base_url: config.public.APP_BASE_URL }
+        return { data: products }
     } catch (error: any) {
         return { data: [] }
     }
