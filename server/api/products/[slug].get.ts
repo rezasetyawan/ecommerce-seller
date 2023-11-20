@@ -2,15 +2,15 @@ import { serverSupabaseClient } from '#supabase/server'
 // import { SupabaseClient } from '@supabase/supabase-js';
 
 interface Product {
-    id: number
+    id: string
     name: string
     price: number
     description: string
-    category_id: number
-    sold: number
+    category_id: string
+    sold?: number
     category: string
     stocks: number
-    images: { id: string, url: string }[]
+    images: { id: string, url: string }[] | null
     variants: { id: string, value: string, price: number, stocks: number, is_default: boolean, weight: string }[]
 }
 
@@ -36,11 +36,12 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             return { data: null, error: true, errorMessage: 'product not found' }
         }
 
-        const productData = data[0] as { id: string, name: string, description: string, category_id: string }
+        const productData = data[0] as { id: string, name: string, description: string, category_id: string, sold: number }
 
         const { data: categories } = await client.from('categories').select('name').eq('id', productData.category_id)
-        const { data: variants } = await client.from('variants').select('id, value, price, is_default, stocks, weight').eq('product_id', productData.id)
-        // const { data: stocks } = await client.from('variants').select('stocks').eq('product_id',productData.id)
+
+        const { data: variants } = await client.from('variants').select('id, value, price, is_default, stocks, weight').eq('product_id', productData.id).returns<{ id: string, value: string, price: number, is_default: boolean, stocks: number, weight: string }[]>()
+
         const { data: images } = await client.from('product_images').select('id, url').eq('product_id', productData.id)
 
         const productStocks = variants ? variants.map(data => +data.stocks) : []
@@ -53,7 +54,7 @@ export default eventHandler(async (event): Promise<ProductSnapshots> => {
             stocks: productStocks.reduce((accumulator, currentValue) => accumulator + currentValue, 0),
             images: images,
             variants: variants
-        }
+        } as Product
 
         return { data: product }
     } catch (error: any) {

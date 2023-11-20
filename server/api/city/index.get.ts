@@ -4043,7 +4043,7 @@ export default eventHandler(async (event) => {
         if (query.search) {
             city = dataSource.rajaongkir.results.filter(item => {
                 const cityName = item.type + ' ' + item.city_name
-                return cityName.toLowerCase().includes(query.search.toLocaleLowerCase())
+                return cityName.toLowerCase().includes(query.search.toLowerCase())
             })
         }
 
