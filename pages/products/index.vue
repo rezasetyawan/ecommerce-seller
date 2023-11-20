@@ -30,27 +30,46 @@ import { deleteProduct } from "~/utils/useProduct";
 import { Button } from "../../components/ui/button";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 import { Product } from "../../types";
-
-const supabase = useSupabaseClient()
-const router = useRouter()
-const products = ref<Product[] | null>();
-const { data } = await useFetch("/api/products/info", {
-  key: "products",
-  method: "get",
-});
-
-products.value = data.value?.data as Product[];
-
-
-const productSuggestions = ref<{ name: string; slug: string }[]>([]);
-const searchKey = ref("")
-const productSuggestionsLoading = ref(false);
-const showProductSuggestions = ref(false);
-
 interface ProductSuggestionResponse {
   data: { name: string; slug: string }[];
 }
 
+const supabase = useSupabaseClient()
+const router = useRouter()
+const route = useRoute()
+const products = ref<Product[] | null>();
+const cacheKey = ref("/products")
+
+const productSuggestions = ref<{ name: string; slug: string }[]>([]);
+const searchKey = ref(route.query.search as string);
+const productSuggestionsLoading = ref(false);
+const showProductSuggestions = ref(false);
+const { $toast } = useNuxtApp()
+
+ 
+const getProducts = async () => {
+  try {
+    const { data: productsCache } = useNuxtData(cacheKey.value)
+
+    if (productsCache.value?.data) {
+      products.value = productsCache.value.data
+      return
+    }
+
+    const { data } = await useFetch("/api/products/info", {
+      key: cacheKey.value,
+      query: {
+        search: searchKey.value
+      },
+    });
+
+    products.value = data.value?.data as Product[];
+    return
+  } catch (error: any) {
+    return $toast.error(error.message ? `${error.message}` : "Failed to fetch product")
+  }
+
+}
 
 const getProductSuggestions = useDebounceFn(
   async () => {
@@ -97,6 +116,24 @@ const deleteProductHandler = async (productId: string) => {
     throw new Error(error.message)
   }
 }
+
+onMounted(async () => {
+  await getProducts()
+})
+
+onBeforeRouteUpdate(async (to, from) => {
+  if (to.fullPath === '/products?search=') {
+    cacheKey.value = '/products'
+    await getProducts();
+    return
+  }
+
+  searchKey.value = to.query.search as string
+  cacheKey.value = to.fullPath
+  await getProducts();
+});
+
+
 definePageMeta({
   layout: 'my-layout',
   middleware: 'seller'

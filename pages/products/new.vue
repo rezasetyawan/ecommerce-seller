@@ -126,6 +126,8 @@ const getImageUrl = (image: File) => {
 const createNewProduct = async () => {
   try {
     isLoading.value = true
+
+    // change the types of variant
     const transformedVariants = variants.value.map((variant) => {
       return {
         ...variant,

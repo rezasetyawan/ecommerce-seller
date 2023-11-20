@@ -21,7 +21,12 @@ const categoryApiResponse = data.value as CategoryApiResponse
 category.value = categoryApiResponse.data as Category
 
 if (!categoryApiResponse.data) {
-  useRouter().push('/404')
+  throw createError({
+    statusCode: 404,
+    data: "Sorry we couldn't find your category",
+    statusMessage: 'Category Not Found',
+    fatal: true
+  })
 }
 
 const editCategory = async () => {

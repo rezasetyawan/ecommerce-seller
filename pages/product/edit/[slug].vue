@@ -5,21 +5,21 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
+Select,
+SelectContent,
+SelectGroup,
+SelectItem,
+SelectLabel,
+SelectTrigger,
+SelectValue,
 } from "~/components/ui/select";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+Table,
+TableBody,
+TableCell,
+TableHead,
+TableHeader,
+TableRow,
 } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
 import { ProductDetail } from "~/types";
@@ -158,6 +158,7 @@ const updateProductData = async () => {
         isLoading.value = true
         if (!product.value) return
 
+        // update product info if product info changed
         if (isProductInfoChange.value) {
             const updateData = {
                 name: product.value.name,
@@ -170,6 +171,7 @@ const updateProductData = async () => {
             await updateProduct(supabase, product.value.id, updateData)
         }
 
+        // delete old images and upload new images, and then replace product image url if image changed
         if (isImageChanged.value) {
             const imagesUrl = await Promise.all(
                 images.value.map(async (image) => {
@@ -202,6 +204,7 @@ const updateProductData = async () => {
             await deleteImages(supabase, oldImageNames)
         }
 
+        // update product variant if variants changed
         if (isVariantsChanged.value) {
             await updateProductVariants(supabase, variants.value)
         }

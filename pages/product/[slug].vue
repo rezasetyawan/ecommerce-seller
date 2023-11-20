@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { useElementVisibility } from "@vueuse/core";
+import { ArrowLeft } from "lucide-vue-next";
+import { nanoid } from "nanoid";
 import { Carousel, Pagination, Slide } from "vue3-carousel";
 import "vue3-carousel/dist/carousel.css";
+import StarRating from "~/components/elements/StarRating.vue";
+import ReviewItem from '~/components/elements/review/ReviewItem.vue';
 import { ProductDetail } from "~/types";
-import { toRupiah } from "~/utils"
-import StarRating from "~/components/elements/StarRating.vue"
-import { ArrowLeft } from "lucide-vue-next";
-import ReviewItem from '~/components/elements/review/ReviewItem.vue'
-import { nanoid } from "nanoid";
-import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
+import { toRupiah } from "~/utils";
 
 interface ProductApiResponse {
   data: ProductDetail;
@@ -28,35 +27,74 @@ interface ReviewApiResponse {
 }
 
 const { $toast } = useNuxtApp()
-const supabase = useSupabaseClient()
-const slug = ref<string>();
-slug.value = useRoute().params.slug as string;
-
+const route = useRoute()
+const slug = ref<string>(route.params.slug as string);
 const product = ref<ProductDetail>();
 
-const { data } = await useFetch(`/api/products/${slug.value}`, {
-  method: "get",
-});
-const productResponse = data.value as ProductApiResponse;
-product.value = productResponse.data;
+const getProductInfo = async () => {
+  try {
+    const { data: productCache } = useNuxtData(slug.value)
 
-if (!productResponse.data) {
-  useRouter().push('/404')
+    // TODO: FIX ERROR DATA IS UNDEFINED WHEN REFRESH PAGE
+    if (productCache.value?.data) {
+      product.value = productCache.value.data
+      return
+    }
+
+    const { data: productResponse, pending } = await useFetch("/api/products/" + slug.value, {
+      key: slug.value
+    });
+    const productData = productResponse.value as ProductApiResponse;
+    product.value = productData.data;
+
+
+    if (!productData.data) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Product Not Found',
+        data: "Sorry, we couldn't find your desired product",
+        fatal: true
+      })
+    }
+    return
+
+  } catch (error: any) {
+    return $toast.error(error.message ? error.message : 'Failed to fetch product')
+  }
 }
 
-const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id)
 const reviews = ref<Review[]>([])
-const reviewData = reviewsResponse.value as ReviewApiResponse
-reviews.value = reviewData.data
+const { data: reviewsCache } = useNuxtData(`${slug.value}-reviews`)
+reviews.value = reviewsCache.value?.data
+
+const getReviews = async () => {
+  try {
+    if (!reviews.value) {
+      const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id, {
+        key: `${slug.value}-reviews`
+      })
+      const reviewData = reviewsResponse.value as ReviewApiResponse
+      reviews.value = reviewData.data
+      return reviews.value
+    }
+  } catch (error: any) {
+    return $toast.error(error.message ? error.message : 'Failed to fetch product reviews')
+  }
+}
 
 
 const seletedVariant = ref<string | undefined>("");
-const price = ref(product.value.price);
 
-seletedVariant.value = product.value.variants.find(
-  (variant) => variant.is_default === true
-)?.id;
+watch(product, () => {
+  seletedVariant.value = product.value?.variants.find(
+    (variant) => variant.is_default === true
+  )?.id;
+}, { immediate: true })
 
+const price = ref(0);
+if (product.value) {
+  price.value = product.value.price
+}
 
 watch(seletedVariant, () => {
   price.value = product.value?.variants.find(
@@ -66,7 +104,6 @@ watch(seletedVariant, () => {
 
 const productInfo = ref(null);
 const isProductInfoInViewport = useElementVisibility(productInfo);
-
 
 const totalRating = computed(() => {
   return reviews.value
@@ -98,10 +135,6 @@ const getRatingPercentageAndCounts = (rating: string) => {
 const RATINGS = ['1', '2', '3', '4', '5']
 const showFullDesc = ref(false)
 
-
-const { data: { user } } = await supabase.auth.getUser()
-console.log(user)
-
 const onSubmitReplyHandler = async (reviewId: string, text: string) => {
   try {
     const replyData = {
@@ -118,13 +151,26 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
     if (error.value) {
       throw new Error(error.value?.message)
     }
-    
+
     return $toast.success('Reply successfully')
   } catch (error: any) {
     return $toast.error(error.message ? `${error.message}` : "Failed to reply")
 
   }
 }
+
+onMounted(async () => {
+  const product = await getProductInfo()
+  const reviews = await getReviews()
+
+  if (!product) {
+    await getProductInfo()
+  }
+
+  if (!reviews) {
+    await getReviews()
+  }
+})
 
 definePageMeta({
   layout: 'my-layout',

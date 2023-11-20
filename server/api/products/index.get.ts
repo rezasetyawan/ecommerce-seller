@@ -23,8 +23,6 @@ interface Query {
 
 export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const client = await serverSupabaseClient(event);
-    const config = useRuntimeConfig()
-
     const query: Query = getQuery(event)
 
     try {

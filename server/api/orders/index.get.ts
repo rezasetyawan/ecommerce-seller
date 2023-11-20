@@ -38,11 +38,8 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
     const query: Query = getQuery(event)
 
     try {
-
-
-        // TODO: IF USER QUERY NOT EXIST CHECK USER ROLE FIRST BEFORE GETTING ORDERS DATA, IF ROLE NOT AUTHORIZED DONT ALLOW TO GET DATA
         if (query.user) {
-            const { data, error } = await client.from('orders').select('id, created_at, total, status').eq('user_id', query.user)
+            const { data, error } = await client.from('orders').select('id, created_at, total, status').eq('user_id', query.user).order('created_at', { ascending: false });
 
             if (error) {
                 return { errorMessage: error.message }
@@ -95,7 +92,7 @@ export default eventHandler(async (event): Promise<ApiResponse | ErrorResponse> 
                 }
             }
         }
-        const { data, error } = await client.from('orders').select('id, created_at, total, status')
+        const { data, error } = await client.from('orders').select('id, created_at, total, status').order('created_at', { ascending: false });
         const { data: { user } } = await client.auth.getUser()
 
         if (!user) {
