@@ -1,6 +1,8 @@
 export default defineEventHandler((event) => {
     const headers = {
-        'Access-Control-Allow-Origin': '*', // or set to the actual origin of your client
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*'
+
     };
     setHeaders(event, headers);
 });
