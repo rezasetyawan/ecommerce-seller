@@ -5,21 +5,21 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import {
-Select,
-SelectContent,
-SelectGroup,
-SelectItem,
-SelectLabel,
-SelectTrigger,
-SelectValue,
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
 } from "~/components/ui/select";
 import {
-Table,
-TableBody,
-TableCell,
-TableHead,
-TableHeader,
-TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
 import { ProductDetail } from "~/types";
@@ -245,8 +245,10 @@ onMounted(async () => {
             isVariantsChanged.value = true
         }, { deep: true })
     }
+    console.log(images.value)
     setInputInitialValue()
 })
+
 
 
 
@@ -258,11 +260,11 @@ const setInputInitialValue = () => {
         const data = new DataTransfer();
 
         images.value.forEach((image) => {
-            data.items.add(new File([image], image.name, { type: image.type }));
+            data.items.add(image);
         });
 
         if (inputImages) {
-            inputImages.files = data.files;
+            inputImages.files = data.files as FileList;
         }
     }
 };
@@ -309,7 +311,7 @@ definePageMeta({
 
 
             <Label for="product_images" class="mt-6 mb-2 text-sm lg:text-base">Product Images</Label>
-            <Input class="md:w-min" type="file" ref="inputImages" id="inputImage" accept="image/png, image/jpeg, image/jpg"
+            <Input class="md:w-min" type="file" ref="inputImages" id="inputImages" accept="image/png, image/jpeg, image/jpg"
                 multiple name="product_images" @change="(event: Event) => onImageChangeHandler(event)" required />
 
             <div class="mt-5">

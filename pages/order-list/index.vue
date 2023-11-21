@@ -51,7 +51,7 @@ const sendOrderHandler = async (orderId: string, receiptNumber: string) => {
     const index = getOrderItemIndex(orderId);
 
     index !== -1 ? (orders.value[index].status = "SHIPPING") : null;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 interface sendReturnData {
@@ -60,21 +60,16 @@ interface sendReturnData {
 }
 
 definePageMeta({
-    layout: 'my-layout',
-    middleware: 'seller'
+  layout: 'my-layout',
+  middleware: 'seller'
 })
 </script>
 <template>
-  <section>
-    <section class="m-5 lg:mx-20 lg:my-10 space-y-2">
-      <template v-for="order in orders" :key="order.id">
-        <OrderItem
-          :order="order"
-          @accept="(id: string) => acceptOrderHandler(id)"
-          @decline="(id: string) => declineOrderHandler(id)"
-          @send="(data: sendReturnData) => sendOrderHandler(data.orderId, data.receiptNumber)"
-        />
-      </template>
-    </section>
+  <section class="m-5 lg:mx-20 lg:my-10 lg:pt-5 space-y-2">
+    <template v-for="order in orders" :key="order.id">
+      <OrderItem :order="order" @accept="(id: string) => acceptOrderHandler(id)"
+        @decline="(id: string) => declineOrderHandler(id)"
+        @send="(data: sendReturnData) => sendOrderHandler(data.orderId, data.receiptNumber)" />
+    </template>
   </section>
 </template>

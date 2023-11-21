@@ -31,56 +31,56 @@ const route = useRoute()
 const slug = ref<string>(route.params.slug as string);
 const product = ref<ProductDetail>();
 
-const getProductInfo = async () => {
-  try {
-    const { data: productCache } = useNuxtData(slug.value)
+// const getProductInfo = async () => {
+//   try {
+//     const { data: productCache } = useNuxtData(slug.value)
 
-    // TODO: FIX ERROR DATA IS UNDEFINED WHEN REFRESH PAGE
-    if (productCache.value?.data) {
-      product.value = productCache.value.data
-      return
-    }
+//     // TODO: FIX ERROR DATA IS UNDEFINED WHEN REFRESH PAGE
+//     if (productCache.value?.data) {
+//       product.value = productCache.value.data
+//       return
+//     }
 
-    const { data: productResponse, pending } = await useFetch("/api/products/" + slug.value, {
-      key: slug.value
-    });
-    const productData = productResponse.value as ProductApiResponse;
-    product.value = productData.data;
+const { data: productResponse, pending } = await useFetch("/api/products/" + slug.value, {
+  key: slug.value
+});
+const productData = productResponse.value as ProductApiResponse;
+product.value = productData.data;
 
 
-    if (!productData.data) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Product Not Found',
-        data: "Sorry, we couldn't find your desired product",
-        fatal: true
-      })
-    }
-    return
-
-  } catch (error: any) {
-    return $toast.error(error.message ? error.message : 'Failed to fetch product')
-  }
+if (!productData.data) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Product Not Found',
+    data: "Sorry, we couldn't find your desired product",
+    fatal: true
+  })
 }
+//   return
+
+// } catch (error: any) {
+//   return $toast.error(error.message ? error.message : 'Failed to fetch product')
+// }
+// }
 
 const reviews = ref<Review[]>([])
 const { data: reviewsCache } = useNuxtData(`${slug.value}-reviews`)
 reviews.value = reviewsCache.value?.data
 
-const getReviews = async () => {
-  try {
-    if (!reviews.value) {
-      const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id, {
-        key: `${slug.value}-reviews`
-      })
-      const reviewData = reviewsResponse.value as ReviewApiResponse
-      reviews.value = reviewData.data
-      return reviews.value
-    }
-  } catch (error: any) {
-    return $toast.error(error.message ? error.message : 'Failed to fetch product reviews')
-  }
-}
+// const getReviews = async () => {
+//   try {
+//     if (!reviews.value) {
+const { data: reviewsResponse } = await useFetch('/api/product-reviews/' + product.value?.id, {
+  key: `${slug.value}-reviews`
+})
+const reviewData = reviewsResponse.value as ReviewApiResponse
+reviews.value = reviewData.data
+// return reviews.value
+//     }
+//   } catch (error: any) {
+//     return $toast.error(error.message ? error.message : 'Failed to fetch product reviews')
+//   }
+// }
 
 
 const seletedVariant = ref<string | undefined>("");
@@ -160,16 +160,16 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
 }
 
 onMounted(async () => {
-  const product = await getProductInfo()
-  const reviews = await getReviews()
+  // const product = await getProductInfo()
+  // const reviews = await getReviews()
 
-  if (!product) {
-    await getProductInfo()
-  }
+  // if (!product) {
+  //   await getProductInfo()
+  // }
 
-  if (!reviews) {
-    await getReviews()
-  }
+  // if (!reviews) {
+  //   await getReviews()
+  // }
 })
 
 definePageMeta({
@@ -315,7 +315,7 @@ definePageMeta({
 
   <!-- product reviews section -->
   <section>
-    <div v-if="reviews" class="mx-5 mb-96 lg:mx-20 md:flex gap-10">
+    <div v-if="reviews && product" class="mx-5 mb-96 lg:mx-20 md:flex gap-10">
       <!-- user rating -->
       <div class="w-full max-md:border-b max-md:pb-4 md:w-min">
         <h2 class="text-lg whitespace-nowrap font-medium lg:text-xl">Product Reviews</h2>
