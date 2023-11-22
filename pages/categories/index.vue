@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Search } from "lucide-vue-next";
 import {
 AlertDialog,
 AlertDialogAction,
@@ -29,21 +30,46 @@ interface Category {
     id: string;
     name: string
 }
-interface CategoryApiResponse {
+interface CategoriesApiResponse {
     data: Category[] | []
 }
 
+const { $toast } = useNuxtApp()
 const categories = ref<Category[]>([])
+const searchKey = ref("")
+const cacheKey = ref("categories")
+const router = useRouter()
+const route = useRoute()
 
-const { data } = await useFetch('/api/categories')
-const categoryApiResponse = data.value as CategoryApiResponse
-categories.value = categoryApiResponse.data
+searchKey.value = route.query.search ? route.query.search as string : ''
 
 const getCategoryIndex = (id: string) => {
     const index = categories.value.findIndex((category) => category.id === id);
     return index;
 };
 
+const getCategories = async () => {
+    try {
+        const { data: categoriesCache } = useNuxtData(cacheKey.value)
+        if (categoriesCache.value?.data) {
+            categories.value = categoriesCache.value.data
+            return
+        }
+        const { data } = await useFetch("/api/categories", {
+            method: "GET",
+            key: cacheKey.value,
+            query: {
+                search: searchKey.value
+            }
+        });
+
+        const categoriesApiResponse = data.value as CategoriesApiResponse;
+        categories.value = categoriesApiResponse.data;
+        return
+    } catch (error: any) {
+        return $toast.error(error.message ? `${error.message}` : "Failed to fetch categories")
+    }
+}
 
 const deleteCategoryHandler = async (id: string) => {
     try {
@@ -52,11 +78,32 @@ const deleteCategoryHandler = async (id: string) => {
         })
 
         const index = getCategoryIndex(id)
-        console.log(index)
         index !== -1 ? categories.value.splice(index, 1) : null;
-    } catch (error) {
-        console.error(error)
+
+        return $toast.success('Category deleted')
+    } catch (error: any) {
+        return $toast.error(error.message ? `${error.message}` : "Failed to fetch categories")
     }
+}
+
+onBeforeRouteUpdate(async (to, from) => {
+    if (to.fullPath === '/categories?search=' || to.fullPath === '/products') {
+        cacheKey.value = 'categories'
+        await getCategories()
+        return
+    }
+
+    searchKey.value = to.query.search as string
+    cacheKey.value = to.fullPath
+    await getCategories()
+});
+
+onMounted(async () => {
+    await getCategories()
+})
+
+const onSearhSubmitHandler = () => {
+    router.push({ name: "categories", query: { search: searchKey.value } });
 }
 
 definePageMeta({
@@ -65,11 +112,21 @@ definePageMeta({
 })
 </script>
 <template>
+    <Toaster position="top-center" richColors />
     <section class="mx-5 py-5 sm:mx-20 lg:mx-40 xl:mx-60">
-        <div class="flex my-2 justify-end">
-            <NuxtLink :to="'/categories/new'">
-                <Button size="sm" class="text-xs lg:text-sm">Add Category</Button>
-            </NuxtLink>
+        <div class="flex justify-between items-center gap-3">
+            <form @submit.prevent="onSearhSubmitHandler"
+                class="flex items-center px-3 h-10 py-2 bg-slate-50 rounded-lg lg:min-w-[24rem]">
+                <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                <input
+                    class="flex w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-sm"
+                    placeholder="Search categories..." v-model="searchKey" />
+            </form>
+            <div class="flex my-2 justify-end">
+                <NuxtLink :to="'/categories/new'">
+                    <Button size="sm" class="text-xs lg:text-sm">Add Category</Button>
+                </NuxtLink>
+            </div>
         </div>
         <Table class="text-sm border mt-2">
             <TableHeader>
