@@ -269,8 +269,8 @@ const setInputInitialValue = () => {
 };
 
 useHead({
-  title: `$Edit {product.value.name} | Ini Toko`,
-  titleTemplate: `Edit ${product.value.name} | Ini Toko`,
+    title: `$Edit {product.value.name} | Ini Toko`,
+    titleTemplate: `Edit ${product.value.name} | Ini Toko`,
 })
 
 definePageMeta({
@@ -310,7 +310,7 @@ definePageMeta({
             <Textarea name="product_description" v-model="product.description" required />
 
             <template v-for="(image, index) in images" :key="index">
-                 v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3 shadow-md" />
+                <img v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3 shadow-md" />
             </template>
 
 
