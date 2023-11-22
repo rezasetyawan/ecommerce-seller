@@ -77,4 +77,19 @@ interface OrderDetail {
     subtotal: number
 }
 
-export type { Product, ProductDetail, OrderItem, Order, OrderDetail }
+interface PopularProduct {
+    variant_id: string
+    sold: number
+    variant: string
+    product_id: string
+    name: string
+    slug: string
+    image_url: string
+}
+
+interface Category {
+    id: string;
+    name: string
+}
+
+export type { Product, ProductDetail, OrderItem, Order, OrderDetail, PopularProduct, Category }

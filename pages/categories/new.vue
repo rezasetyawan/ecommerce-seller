@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Input } from '~/components/ui/input';
 import { ArrowLeft } from 'lucide-vue-next';
-import { Button } from '~/components/ui/button';
 import { nanoid } from 'nanoid';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
 
 interface Category {
     id: string;
@@ -28,8 +28,6 @@ const addNewCategory = async () => {
             id: nanoid(16),
             name: ''
         }
-
-
     } catch (error: any) {
         throw new Error(error.message)
     } finally {
@@ -46,6 +44,11 @@ const onSubmitHandler = async () => {
         error: (data: any) => (data.message ? `${data.message}` : "Failed to create category"),
     });
 }
+
+useHead({
+  title: `New Category | Ini Toko`,
+  titleTemplate: `New Category | Ini Toko`,
+})
 
 definePageMeta({
     layout: 'my-layout',

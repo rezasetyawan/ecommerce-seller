@@ -19,16 +19,19 @@ interface ProductSnapshots {
 
 interface Query {
     search: string
+    category: string
 }
 
 export default eventHandler(async (event): Promise<ProductSnapshots> => {
     const client = await serverSupabaseClient(event);
-    const config = useRuntimeConfig()
-
     const query: Query = getQuery(event)
 
     try {
         let queryBuilder = client.from('products').select('id, name, sold, category_id, slug')
+        
+        if (query.category) {
+            queryBuilder = queryBuilder.eq('category_id', query.category)
+        }
 
         if (query.search) {
             queryBuilder = queryBuilder.ilike('name', `%${query.search}%`)

@@ -3,9 +3,9 @@ import { ArrowLeft, X } from "lucide-vue-next";
 import { nanoid } from "nanoid";
 import { addProductImage } from "~/utils/useImage";
 import { addProduct } from "~/utils/useProduct";
-import { Button } from "../../components/ui/button";
-import { Input } from "../../components/ui/input";
-import { Label } from "../../components/ui/label";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -14,7 +14,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui/select";
+} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,8 +22,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import { Textarea } from "../../components/ui/textarea";
+} from "~/components/ui/table";
+import { Textarea } from "~/components/ui/textarea";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
 
 interface Variant {
@@ -126,6 +126,8 @@ const getImageUrl = (image: File) => {
 const createNewProduct = async () => {
   try {
     isLoading.value = true
+
+    // change the types of variant
     const transformedVariants = variants.value.map((variant) => {
       return {
         ...variant,
@@ -207,6 +209,11 @@ const resetAllField = () => {
   inputImages = document.getElementById("inputImages") as HTMLInputElement;
   inputImages.value = ''
 }
+
+useHead({
+  title: `New Product | Ini Toko`,
+  titleTemplate: `New Product | Ini Toko`,
+})
 
 definePageMeta({
   layout: 'my-layout',

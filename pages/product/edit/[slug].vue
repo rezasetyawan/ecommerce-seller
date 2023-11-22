@@ -158,6 +158,7 @@ const updateProductData = async () => {
         isLoading.value = true
         if (!product.value) return
 
+        // update product info if product info changed
         if (isProductInfoChange.value) {
             const updateData = {
                 name: product.value.name,
@@ -170,6 +171,7 @@ const updateProductData = async () => {
             await updateProduct(supabase, product.value.id, updateData)
         }
 
+        // delete old images and upload new images, and then replace product image url if image changed
         if (isImageChanged.value) {
             const imagesUrl = await Promise.all(
                 images.value.map(async (image) => {
@@ -202,6 +204,7 @@ const updateProductData = async () => {
             await deleteImages(supabase, oldImageNames)
         }
 
+        // update product variant if variants changed
         if (isVariantsChanged.value) {
             await updateProductVariants(supabase, variants.value)
         }
@@ -247,6 +250,7 @@ onMounted(async () => {
 
 
 
+
 const setInputInitialValue = () => {
     let inputImages: HTMLInputElement | null;
     inputImages = document.getElementById("inputImages") as HTMLInputElement;
@@ -255,14 +259,19 @@ const setInputInitialValue = () => {
         const data = new DataTransfer();
 
         images.value.forEach((image) => {
-            data.items.add(new File([image], image.name, { type: image.type }));
+            data.items.add(image);
         });
 
         if (inputImages) {
-            inputImages.files = data.files;
+            inputImages.files = data.files as FileList;
         }
     }
 };
+
+useHead({
+  title: `$Edit {product.value.name} | Ini Toko`,
+  titleTemplate: `Edit ${product.value.name} | Ini Toko`,
+})
 
 definePageMeta({
     layout: 'my-layout',
@@ -301,12 +310,12 @@ definePageMeta({
             <Textarea name="product_description" v-model="product.description" required />
 
             <template v-for="(image, index) in images" :key="index">
-                <img v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3 shadow-md" />
+                 v-if="image" :src="getImageUrl(image)" alt="Selected Image" class="max-w-[150px] mt-3 shadow-md" />
             </template>
 
 
             <Label for="product_images" class="mt-6 mb-2 text-sm lg:text-base">Product Images</Label>
-            <Input class="md:w-min" type="file" ref="inputImages" id="inputImage" accept="image/png, image/jpeg, image/jpg"
+            <Input class="md:w-min" type="file" ref="inputImages" id="inputImages" accept="image/png, image/jpeg, image/jpg"
                 multiple name="product_images" @change="(event: Event) => onImageChangeHandler(event)" required />
 
             <div class="mt-5">

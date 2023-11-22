@@ -6,6 +6,7 @@ import { getProductCounts } from "~/utils/useProduct";
 import { getTotalRevenue, getTotalRevenueEveryMonth } from "~/utils/getTotallRevenue";
 import { toRupiah } from "~/utils";
 import { ScrollArea } from '~/components/ui/scroll-area'
+import { PopularProduct } from "~/types"
 
 const supabase = useSupabaseClient()
 const totalRevenue = ref(0)
@@ -13,21 +14,9 @@ totalRevenue.value = await getTotalRevenue(supabase)
 const productCounts = ref(0)
 productCounts.value = await getProductCounts(supabase)
 
-
-interface PopularProduct {
-    variant_id: string
-    sold: number
-    variant: string
-    product_id: string
-    name: string
-    slug: string
-    image_url: string
-}
-
 interface PopularProductsResponse {
     data: PopularProduct[]
 }
-
 
 const { data } = await useFetch('/api/popular-products')
 const popularProductsResponse = data.value as PopularProductsResponse
@@ -50,6 +39,12 @@ revenueGraph.value = [
     { name: 'Dec', total: Math.floor(Math.random() * 5000) + 1000 },
 ]
 
+useHead({
+  title: `Home | Ini Toko`,
+  titleTemplate: `Home | Ini Toko`,
+})
+
+
 definePageMeta({
     layout: 'my-layout',
     middleware: 'seller'
@@ -71,59 +66,15 @@ definePageMeta({
     </section>
     <section class="mx-3 lg:mx-20 mt-10 md:grid  grid-cols-3 border rounded-lg p-3 shadow-sm mb-10">
         <div class="col-span-2">
-            <h2 class="text-base font-semibold lg:text-lg">Overview</h2>
-            <ClientOnly>
-                <Overview :data="revenueGraph" class="mt-4" />
-            </ClientOnly>
+            <h2 class="text-base font-semibold lg:text-lg">Revenue Overview</h2>
+            <Overview :data="revenueGraph" class="mt-4" />
         </div>
         <div class="rounded-lg col-span-1 max-md:mt-6">
             <h2 class="text-base font-semibold lg:text-lg">Most Selled Products</h2>
             <ScrollArea class="h-[300px] space-y-2 lg:pr-4">
                 <template v-for="product in popularProducts" :key="product.variant_id">
                     <div class="flex gap-3 items-center shadow-sm border  p-1.5 mb-2 rounded-lg">
-                        <img :src="product.image_url" class="w-14 lg:w-20" />
-                        <div class="w-full">
-                            <h2 class="text-sm font-semibold truncate">
-                                <NuxtLink :to="'/product/' + product.slug">{{
-                                    product.name
-                                }}</NuxtLink>
-                            </h2>
-                            <p class="font-medium text-xs lg:text-sm">Variant: {{ product.variant }}</p>
-                            <p class="text-black/70 font-medium text-xs lg:text-sm">
-                                Sold: {{ product.sold }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3 items-center shadow-sm border  p-1.5 mb-2 rounded-lg">
-                        <img :src="product.image_url" class="w-14 lg:w-20" />
-                        <div class="w-full">
-                            <h2 class="text-sm font-semibold truncate">
-                                <NuxtLink :to="'/product/' + product.slug">{{
-                                    product.name
-                                }}</NuxtLink>
-                            </h2>
-                            <p class="font-medium text-xs lg:text-sm">Variant: {{ product.variant }}</p>
-                            <p class="text-black/70 font-medium text-xs lg:text-sm">
-                                Sold: {{ product.sold }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3 items-center shadow-sm border  p-1.5 mb-2 rounded-lg">
-                        <img :src="product.image_url" class="w-14 lg:w-20" />
-                        <div class="w-full">
-                            <h2 class="text-sm font-semibold truncate">
-                                <NuxtLink :to="'/product/' + product.slug">{{
-                                    product.name
-                                }}</NuxtLink>
-                            </h2>
-                            <p class="font-medium text-xs lg:text-sm">Variant: {{ product.variant }}</p>
-                            <p class="text-black/70 font-medium text-xs lg:text-sm">
-                                Sold: {{ product.sold }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex gap-3 items-center shadow-sm border  p-1.5 mb-2 rounded-lg">
-                        <img :src="product.image_url" class="w-14 lg:w-20" />
+                        <NuxtImg :src="product.image_url ? product.image_url : ''" class="w-14 lg:w-20" />
                         <div class="w-full">
                             <h2 class="text-sm font-semibold truncate">
                                 <NuxtLink :to="'/product/' + product.slug">{{

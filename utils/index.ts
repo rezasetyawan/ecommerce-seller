@@ -37,3 +37,32 @@ export const getTextAfterSomeText = (text: string, separatorText: string) => {
   }
 }
 
+export const getStatusMessage = (status: string) => {
+  let statusMessage: string = "";
+
+  switch (status) {
+    case "PENDING":
+      statusMessage = "Waiting confirmation.";
+      break;
+    case "PAYMENT":
+      statusMessage = "Payment";
+      break;
+    case "ONPROCESS":
+      statusMessage = "Onprocess";
+      break;
+    case "SHIPPING":
+      statusMessage = "Shipping";
+      break;
+    case "CANCELLED":
+      statusMessage = "Cancelled";
+      break;
+    case "FINISHED":
+      statusMessage = "Finished";
+      break;
+    default:
+      statusMessage = "Invalid status.";
+  }
+
+  return statusMessage;
+};
+

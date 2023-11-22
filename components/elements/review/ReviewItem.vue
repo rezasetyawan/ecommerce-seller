@@ -66,7 +66,7 @@ watch(showReply, async () => {
         </div>
         <div class="flex gap-3 items-center mt-1">
             <div class="w-8 h-8 overflow-hidden rounded-full lg:w-10 lg:h-10">
-                <img :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')">
+                <NuxtImg :src="'https://ui-avatars.com/api/?name=' + review.user_name.replaceAll(' ', ' + ')" />
             </div>
             <p class="font-medium">
                 {{ review.user_name }}
@@ -104,7 +104,7 @@ watch(showReply, async () => {
             <div v-if="reply">
                 <div class="flex gap-3 items-center mt-1">
                     <div class="w-8 h-8 overflow-hidden rounded-full lg:w-10 lg:h-10">
-                        <img :src="'https://ui-avatars.com/api/?name=' + 'Ko Aliong'.replaceAll(' ', ' + ')">
+                        <NuxtImg :src="'https://ui-avatars.com/api/?name=' + 'Ko Aliong'.replaceAll(' ', ' + ')" />
                     </div>
                     <div class="flex justify-between gap-3  items-center">
                         <p class="font-medium text-xs lg:text-sm">

@@ -20,7 +20,6 @@ const signInUser = async () => {
     isLoading.value = true
     const { data, error } = await supabase.auth.signInWithPassword(user.value);
     
-    console.log(error?.message)
     if (error) {
       throw new Error(error.message);
     }
@@ -42,6 +41,11 @@ const onSubmitHandler = async () => {
     error: (data: any) => (data.message ? `${data.message}` : "Failed to signin"),
   });
 }
+
+useHead({
+  title: `Signin | Ini Toko`,
+  titleTemplate: `Signin | Ini Toko`,
+})
 
 definePageMeta({
   layout: 'default'

@@ -21,7 +21,12 @@ const categoryApiResponse = data.value as CategoryApiResponse
 category.value = categoryApiResponse.data as Category
 
 if (!categoryApiResponse.data) {
-  useRouter().push('/404')
+  throw createError({
+    statusCode: 404,
+    data: "Sorry we couldn't find your category",
+    statusMessage: 'Category Not Found',
+    fatal: true
+  })
 }
 
 const editCategory = async () => {
@@ -46,6 +51,11 @@ const onSubmitHandler = async () => {
         error: (data: any) => (data.message ? `${data.message}` : "Failed to update category"),
     });
 }
+
+useHead({
+  title: `${category.value.name} category | Ini Toko`,
+  titleTemplate: `${category.value.name} category | Ini Toko`,
+})
 
 definePageMeta({
     layout: 'my-layout',

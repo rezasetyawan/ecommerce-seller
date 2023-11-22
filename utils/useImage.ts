@@ -23,7 +23,6 @@ const addProductImage = async (client: SupabaseClient, imageFile: File, supabase
 
 const deleteImages = async (client: SupabaseClient, imageNames: string[]) => {
     try {
-        console.log(imageNames)
         const { error } = await client.storage.from('product-images').remove(imageNames)
 
         if (error) {
