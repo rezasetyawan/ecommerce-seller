@@ -8,7 +8,7 @@
 <style>
 /* width */
 ::-webkit-scrollbar {
-  @apply w-2.5
+  @apply w-2.5 h-2.5
 }
 
 /* Track */

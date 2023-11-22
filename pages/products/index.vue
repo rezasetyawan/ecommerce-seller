@@ -58,10 +58,14 @@ const categories = ref<Category[]>([])
 
 const getProducts = async () => {
   try {
-    // console.log(cacheKey.value)
     isLoading.value = true
+    // DISABLE CACHING, IDK WHY THERE'S BUG ON IT
     // const { data: productsCache } = useNuxtData(cacheKey.value)
-
+    
+    // clearNuxtData('/products?search=test&category=')
+    // clearNuxtData('/products?search=TEST&category=')
+    // console.log(queryParams.value)
+    // console.log(cacheKey.value)
     // if (productsCache.value?.data) {
     //   console.log('not fetch egen')
     //   products.value = productsCache.value.data

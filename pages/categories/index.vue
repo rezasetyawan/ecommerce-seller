@@ -108,7 +108,7 @@ const onSearhSubmitHandler = () => {
 
 useHead({
   title: `Categories | Ini Toko`,
-  titleTemplate: `$Categories | Ini Toko`,
+  titleTemplate: `Categories | Ini Toko`,
 })
 
 definePageMeta({

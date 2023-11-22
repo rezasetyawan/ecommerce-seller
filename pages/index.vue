@@ -66,7 +66,7 @@ definePageMeta({
     </section>
     <section class="mx-3 lg:mx-20 mt-10 md:grid  grid-cols-3 border rounded-lg p-3 shadow-sm mb-10">
         <div class="col-span-2">
-            <h2 class="text-base font-semibold lg:text-lg">Overview</h2>
+            <h2 class="text-base font-semibold lg:text-lg">Revenue Overview</h2>
             <Overview :data="revenueGraph" class="mt-4" />
         </div>
         <div class="rounded-lg col-span-1 max-md:mt-6">

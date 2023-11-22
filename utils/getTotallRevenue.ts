@@ -40,9 +40,6 @@ export const getTotalRevenueEveryMonth = async (client: SupabaseClient) => {
 
         for (const order of arrayOfOrderRevenue) {
             const month = new Date(order.timestamp).getMonth(); // 0 for Jan, 1 for Feb, ...
-            console.log(month)
-
-
             monthlyRevenue[month] = (monthlyRevenue[month] || 0) + order.total;
         }
 
