@@ -151,7 +151,6 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
     if (error.value) {
       throw new Error(error.value?.message)
     }
-
     return $toast.success('Reply successfully')
   } catch (error: any) {
     return $toast.error(error.message ? `${error.message}` : "Failed to reply")
