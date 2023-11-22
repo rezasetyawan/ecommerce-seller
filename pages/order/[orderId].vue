@@ -81,7 +81,7 @@ definePageMeta({
         <div class="w-full space-y-3">
           <template v-for="item in order.order_items" :key="item.id">
             <div class="flex gap-3 items-center shadow-sm border p-1.5 rounded-lg lg:p-3">
-              <img :src="item.image_url" class="w-14 lg:w-20" />
+              <NuxtImg :src="item.image_url ? item.image_url : ''" class="w-14 lg:w-20" />
               <div class="w-full">
                 <h2 class="text-sm font-semibold lg:text-base">
                   <NuxtLink :to="'/product/' + item.slug">{{

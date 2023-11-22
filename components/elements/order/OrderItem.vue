@@ -90,7 +90,7 @@ const getStatusMessage = (status: string) => {
       <div class="w-full space-y-2 lg:space-y-3">
         <template v-for="item in order.order_items" :key="item.id">
           <div class="flex gap-3 items-center">
-            <img :src="item.image_url" class="w-14 lg:w-20" />
+            <NuxtImg :src="item.image_url ? item.image_url : ''" class="w-14 lg:w-20" />
             <div class="w-full">
               <h2 class="text-sm font-semibold truncate lg:text-base">
                 <NuxtLink :to="'/product/' + item.slug">{{

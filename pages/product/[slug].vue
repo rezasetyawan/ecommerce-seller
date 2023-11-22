@@ -189,7 +189,7 @@ definePageMeta({
     <div class="sm:w-[40%] lg:w-[25%] h-full w-full bg-white">
       <Carousel :items-to-show="1">
         <Slide v-for="(image, key) in product?.images" :key="key" class="">
-          <img :src="image.url" class="rounded-md object-cover aspect-[4/3" />
+          <NuxtImg :src="image.url ? image.url : ''" class="rounded-md object-cover aspect-[4/3" />
         </Slide>
         <template #addons>
           <Pagination />

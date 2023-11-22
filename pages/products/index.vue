@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
-import { Search } from "lucide-vue-next";
+import { Search, Filter } from "lucide-vue-next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,26 +29,35 @@ import { toRupiah } from "~/utils";
 import { deleteProduct } from "~/utils/useProduct";
 import { Button } from "../../components/ui/button";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
-import { Product } from "../../types";
+import { Product, Category } from "../../types";
 interface ProductSuggestionResponse {
   data: { name: string; slug: string }[];
 }
 
+
+interface CategoriesApiResponse {
+  data: Category[];
+}
 const supabase = useSupabaseClient()
 const router = useRouter()
 const route = useRoute()
 const products = ref<Product[] | null>();
 const cacheKey = ref("/products")
+const searchKey = ref(route.query.search as string);
+const category = ref(route.query.category as string);
+const isLoading = ref(false)
 
 const productSuggestions = ref<{ name: string; slug: string }[]>([]);
-const searchKey = ref(route.query.search as string);
 const productSuggestionsLoading = ref(false);
 const showProductSuggestions = ref(false);
 const { $toast } = useNuxtApp()
 
- 
+const categories = ref<Category[]>([])
+
+
 const getProducts = async () => {
   try {
+    isLoading.value = true
     const { data: productsCache } = useNuxtData(cacheKey.value)
 
     if (productsCache.value?.data) {
@@ -59,7 +68,8 @@ const getProducts = async () => {
     const { data } = await useFetch("/api/products/info", {
       key: cacheKey.value,
       query: {
-        search: searchKey.value
+        search: searchKey.value,
+        category: category.value
       },
     });
 
@@ -67,8 +77,29 @@ const getProducts = async () => {
     return
   } catch (error: any) {
     return $toast.error(error.message ? `${error.message}` : "Failed to fetch product")
+  } finally {
+    isLoading.value = false
   }
+}
 
+const getCategories = async () => {
+  try {
+    const { data: categoriesCache } = useNuxtData('categories')
+    if (categoriesCache.value?.data) {
+      categories.value = categoriesCache.value.data
+      return
+    }
+    const { data } = await useFetch("/api/categories", {
+      method: "GET",
+      key: 'categories'
+    });
+
+    const categoriesApiResponse = data.value as CategoriesApiResponse;
+    categories.value = categoriesApiResponse.data;
+    return
+  } catch (error: any) {
+    return $toast.error(error.message ? `${error.message}` : "Failed to fetch categories")
+  }
 }
 
 const getProductSuggestions = useDebounceFn(
@@ -77,6 +108,7 @@ const getProductSuggestions = useDebounceFn(
       const { data } = await useFetch("/api/product-suggestions", {
         query: {
           search: searchKey.value,
+          category: category.value
         },
       });
       productSuggestionsLoading.value = false;
@@ -95,7 +127,7 @@ const hideProductSuggetions = useDebounceFn(() => {
 }, 150);
 
 const onSearchSubmit = () => {
-  router.push({ name: "products", query: { search: searchKey.value } });
+  router.push({ name: "products", query: { search: searchKey.value, category: category.value } });
   showProductSuggestions.value = false;
 };
 
@@ -119,10 +151,11 @@ const deleteProductHandler = async (productId: string) => {
 
 onMounted(async () => {
   await getProducts()
+  await getCategories()
 })
 
 onBeforeRouteUpdate(async (to, from) => {
-  if (to.fullPath === '/products?search=') {
+  if (to.fullPath === '/products?search=' || to.fullPath === '/products?category=' || to.fullPath === '/products?search=&category=') {
     cacheKey.value = '/products'
     await getProducts();
     return
@@ -133,6 +166,10 @@ onBeforeRouteUpdate(async (to, from) => {
   await getProducts();
 });
 
+const onChoseCategorySubmit = () => {
+  router.push({ name: "products", query: { search: searchKey.value, category: category.value } });
+};
+
 
 definePageMeta({
   layout: 'my-layout',
@@ -142,11 +179,45 @@ definePageMeta({
 <template>
   <section class="m-3 md:m-10 md:mx-20">
     <div class="md:flex justify-between pt-4">
-      <div class="relative">
-        <form @submit.prevent="onSearchSubmit" class="flex items-center py-0.5 px-3 bg-slate-50 rounded-lg">
+      <div class="relative flex items-center gap-2 mb-2">
+        <AlertDialog>
+          <AlertDialogTrigger>
+            <Button variant="secondary" class="block">
+              <Filter class="stroke-slate-800 w-4 h-4 lg:w-5 lg:h-5" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle class="font-semibold">Choose Category</AlertDialogTitle>
+              <AlertDialogDescription>
+                <div class="flex flex-wrap max-w-[300px] gap-0.5">
+                  <label v-for="item in categories" :key="item.id"
+                    class="border-2 border-slate-100 px-[0.8em] py-[0.4em] rounded-md hover:cursor-pointer text-sm"
+                    :class="{ 'checked-label': item.id === category }">
+                    <input type="radio" v-model="category" :value="item.id" class="w-full h-full hidden" />
+                    {{ item.name }}
+                  </label>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction @click="() => {
+                category = ''
+                onChoseCategorySubmit()
+              }">Reset</AlertDialogAction>
+              <AlertDialogAction @click="onChoseCategorySubmit">
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <form @submit.prevent="onSearchSubmit"
+          class="flex items-center px-3 h-10 py-2 bg-slate-50 rounded-lg lg:min-w-[24rem]">
           <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <input
-            class="flex w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-sm"
+            class="flex w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-sm"
             placeholder="Search products..." v-model="searchKey" @input="() => {
               productSuggestions = [];
               productSuggestionsLoading = true;
@@ -173,6 +244,8 @@ definePageMeta({
             </svg>
           </div>
         </div>
+
+
       </div>
       <NuxtLink to="/products/new">
         <Button class="my-3 text-xs lg:text-sm">
@@ -247,5 +320,14 @@ definePageMeta({
         </TableRow>
       </TableBody>
     </Table>
+    <div v-if="!isLoading && products && !products.length" class="flex flex-col items-center justify-center">
+      <NuxtImg :src="'/img/product-not-found.jpg'" class="block w-full md:w-1/3" />
+      <p class="font-medium text-center text-base lg:text-lg">Product not found</p>
+    </div>
   </section>
 </template>
+<style scoped>
+.checked-label {
+  @apply bg-slate-100
+}
+</style>

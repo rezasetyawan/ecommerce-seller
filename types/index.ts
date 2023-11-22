@@ -87,5 +87,9 @@ interface PopularProduct {
     image_url: string
 }
 
+interface Category {
+    id: string;
+    name: string
+}
 
-export type { Product, ProductDetail, OrderItem, Order, OrderDetail, PopularProduct }
+export type { Product, ProductDetail, OrderItem, Order, OrderDetail, PopularProduct, Category }

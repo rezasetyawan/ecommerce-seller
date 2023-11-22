@@ -68,7 +68,7 @@ definePageMeta({
             <ScrollArea class="h-[300px] space-y-2 lg:pr-4">
                 <template v-for="product in popularProducts" :key="product.variant_id">
                     <div class="flex gap-3 items-center shadow-sm border  p-1.5 mb-2 rounded-lg">
-                        <img :src="product.image_url" class="w-14 lg:w-20" />
+                        <NuxtImg :src="product.image_url ? product.image_url : ''" class="w-14 lg:w-20" />
                         <div class="w-full">
                             <h2 class="text-sm font-semibold truncate">
                                 <NuxtLink :to="'/product/' + product.slug">{{

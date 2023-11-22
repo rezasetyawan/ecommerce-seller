@@ -7,7 +7,7 @@ defineProps(['error'])
 <template>
     <Header/>
     <section class="w-full md:flex justify-center gap-10 p-3 font-rubik mt-14" v-if="error.statusCode === 404">
-        <img :src="'/img/not-found.jpg'" class="block w-full md:w-2/5" />
+        <NuxtImg :src="'/img/not-found.jpg'" class="block w-full md:w-2/5" />
         <div class="flex items-center">
             <div>
                 <h2 class="text-xl font-semibold lg:text-3xl">{{ error.statusMessage }}</h2>
