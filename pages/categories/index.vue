@@ -106,6 +106,11 @@ const onSearhSubmitHandler = () => {
     router.push({ name: "categories", query: { search: searchKey.value } });
 }
 
+useHead({
+  title: `Categories | Ini Toko`,
+  titleTemplate: `$Categories | Ini Toko`,
+})
+
 definePageMeta({
     layout: 'my-layout',
     middleware: 'seller'

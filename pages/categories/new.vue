@@ -45,6 +45,11 @@ const onSubmitHandler = async () => {
     });
 }
 
+useHead({
+  title: `New Category | Ini Toko`,
+  titleTemplate: `New Category | Ini Toko`,
+})
+
 definePageMeta({
     layout: 'my-layout',
     middleware: 'seller'

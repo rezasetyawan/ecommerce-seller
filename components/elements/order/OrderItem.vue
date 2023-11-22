@@ -1,82 +1,37 @@
 <script setup lang="ts">
-import { Button } from "../../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../../ui/dialog";
-
 import { ref, toRefs } from "vue";
 import { Order } from "~/types";
-import { Input } from "../../ui/input";
-
+import { formatDate, getStatusMessage, toRupiah } from "~/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+AlertDialog,
+AlertDialogAction,
+AlertDialogCancel,
+AlertDialogContent,
+AlertDialogDescription,
+AlertDialogFooter,
+AlertDialogHeader,
+AlertDialogTitle,
+AlertDialogTrigger,
 } from "../../ui/alert-dialog";
+import { Button } from "../../ui/button";
+import {
+Dialog,
+DialogContent,
+DialogHeader,
+DialogTitle,
+DialogTrigger,
+} from "../../ui/dialog";
+import { Input } from "../../ui/input";
 
 interface Props {
   order: Order;
 }
 
 const props = defineProps<Props>();
+const { order } = toRefs(props);
 const emit = defineEmits(["accept", "decline", "send"]);
 
-const { order } = toRefs(props);
-const toRupiah = (price: number) => {
-  return "Rp. " + price.toLocaleString("id-ID");
-};
-
-const formatDate = (millisecondsTimestamp: string): string => {
-  const dateObject = new Date(parseInt(millisecondsTimestamp));
-  const options: object = {
-    year: "numeric",
-    month: "long",
-    day: "2-digit",
-  };
-  const formattedDate = dateObject.toLocaleString(undefined, options);
-  return formattedDate;
-};
-
 const receiptNumber = ref("");
-
-const getStatusMessage = (status: string) => {
-  let statusMessage: string = "";
-
-  switch (status) {
-    case "PENDING":
-      statusMessage = "Waiting confirmation.";
-      break;
-    case "PAYMENT":
-      statusMessage = "Payment";
-      break;
-    case "ONPROCESS":
-      statusMessage = "Onprocess";
-      break;
-    case "SHIPPING":
-      statusMessage = "Shipping";
-      break;
-    case "CANCELLED":
-      statusMessage = "Cancelled";
-      break;
-    case "FINISHED":
-      statusMessage = "Finished";
-      break;
-    default:
-      statusMessage = "Invalid status.";
-  }
-
-  return statusMessage;
-};
 </script>
 <template>
   <div class="p-3 rounded-lg shadow-md">
@@ -114,10 +69,10 @@ const getStatusMessage = (status: string) => {
         <!-- actions button -->
         <div class="flex justify-end gap-2 max-sm:mt-1">
           <NuxtLink :to="'/order/' + order.id">
-          <Button variant="link" class="whitespace-nowrap text-xs lg:text-sm" size="xs">
-            See detail
-          </Button>
-        </NuxtLink>
+            <Button variant="link" class="whitespace-nowrap text-xs lg:text-sm" size="xs">
+              See detail
+            </Button>
+          </NuxtLink>
           <div v-if="order.status === 'PENDING' || order.status === 'CANCELLED'" class="flex gap-2">
             <AlertDialog>
               <AlertDialogTrigger>
@@ -136,7 +91,8 @@ const getStatusMessage = (status: string) => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            <Button class="whitespace-nowrap text-xs lg:text-sm" size="xs" @click="() => emit('accept', order.id)">Accept</Button>
+            <Button class="whitespace-nowrap text-xs lg:text-sm" size="xs"
+              @click="() => emit('accept', order.id)">Accept</Button>
           </div>
           <div v-if="order.status === 'ONPROCESS'" class="flex gap-2">
             <AlertDialog>

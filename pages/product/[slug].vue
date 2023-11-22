@@ -159,7 +159,7 @@ const onSubmitReplyHandler = async (reviewId: string, text: string) => {
   }
 }
 
-onMounted(async () => {
+// onMounted(async () => {
   // const product = await getProductInfo()
   // const reviews = await getReviews()
 
@@ -170,6 +170,11 @@ onMounted(async () => {
   // if (!reviews) {
   //   await getReviews()
   // }
+// })
+
+useHead({
+  title: `${product.value.name} | Ini Toko`,
+  titleTemplate: `${product.value.name} | Ini Toko`,
 })
 
 definePageMeta({

@@ -245,7 +245,6 @@ onMounted(async () => {
             isVariantsChanged.value = true
         }, { deep: true })
     }
-    console.log(images.value)
     setInputInitialValue()
 })
 
@@ -268,6 +267,11 @@ const setInputInitialValue = () => {
         }
     }
 };
+
+useHead({
+  title: `$Edit {product.value.name} | Ini Toko`,
+  titleTemplate: `Edit ${product.value.name} | Ini Toko`,
+})
 
 definePageMeta({
     layout: 'my-layout',

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
-import { Search, Filter } from "lucide-vue-next";
+import { Filter, Search, Loader2 } from "lucide-vue-next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,22 +29,24 @@ import { toRupiah } from "~/utils";
 import { deleteProduct } from "~/utils/useProduct";
 import { Button } from "../../components/ui/button";
 import { useSupabaseClient } from "../../node_modules/@nuxtjs/supabase/dist/runtime/composables/useSupabaseClient";
-import { Product, Category } from "../../types";
+import { Category, Product } from "../../types";
 interface ProductSuggestionResponse {
   data: { name: string; slug: string }[];
 }
 
-
 interface CategoriesApiResponse {
   data: Category[];
 }
+
 const supabase = useSupabaseClient()
 const router = useRouter()
 const route = useRoute()
 const products = ref<Product[] | null>();
 const cacheKey = ref("/products")
-const searchKey = ref(route.query.search as string);
-const category = ref(route.query.category as string);
+const queryParams = ref({
+  search: route.query.search ? route.query.search as string : '',
+  category: route.query.category ? route.query.category as string : ''
+})
 const isLoading = ref(false)
 
 const productSuggestions = ref<{ name: string; slug: string }[]>([]);
@@ -54,27 +56,31 @@ const { $toast } = useNuxtApp()
 
 const categories = ref<Category[]>([])
 
-
 const getProducts = async () => {
   try {
+    // console.log(cacheKey.value)
     isLoading.value = true
-    const { data: productsCache } = useNuxtData(cacheKey.value)
+    // const { data: productsCache } = useNuxtData(cacheKey.value)
 
-    if (productsCache.value?.data) {
-      products.value = productsCache.value.data
-      return
-    }
+    // if (productsCache.value?.data) {
+    //   console.log('not fetch egen')
+    //   products.value = productsCache.value.data
+    //   return
+    // }
+
+    // console.log('fetch egen')
 
     const { data } = await useFetch("/api/products/info", {
       key: cacheKey.value,
-      query: {
-        search: searchKey.value,
-        category: category.value
-      },
+      query: queryParams.value
     });
 
     products.value = data.value?.data as Product[];
-    return
+    if (products.value) {
+      return
+    } else {
+      await getProducts()
+    }
   } catch (error: any) {
     return $toast.error(error.message ? `${error.message}` : "Failed to fetch product")
   } finally {
@@ -102,13 +108,13 @@ const getCategories = async () => {
   }
 }
 
+// for search auto complete
 const getProductSuggestions = useDebounceFn(
   async () => {
     try {
       const { data } = await useFetch("/api/product-suggestions", {
         query: {
-          search: searchKey.value,
-          category: category.value
+          search: queryParams.value.search
         },
       });
       productSuggestionsLoading.value = false;
@@ -127,7 +133,7 @@ const hideProductSuggetions = useDebounceFn(() => {
 }, 150);
 
 const onSearchSubmit = () => {
-  router.push({ name: "products", query: { search: searchKey.value, category: category.value } });
+  router.push({ name: "products", query: queryParams.value });
   showProductSuggestions.value = false;
 };
 
@@ -144,12 +150,14 @@ const deleteProductHandler = async (productId: string) => {
     const index = getProductItemIndex(productId);
 
     index !== -1 ? products.value?.splice(index, 1) : null;
+    return $toast.success('Product deleted')
   } catch (error: any) {
-    throw new Error(error.message)
+    return $toast.error(error.message ? `${error.message}` : "Failed to delete product")
   }
 }
 
 onMounted(async () => {
+  cacheKey.value = route.fullPath
   await getProducts()
   await getCategories()
 })
@@ -161,15 +169,20 @@ onBeforeRouteUpdate(async (to, from) => {
     return
   }
 
-  searchKey.value = to.query.search as string
+  queryParams.value.search = to.query.search as string
+  queryParams.value.category = to.query.category as string
   cacheKey.value = to.fullPath
-  await getProducts();
+  await getProducts()
 });
 
 const onChoseCategorySubmit = () => {
-  router.push({ name: "products", query: { search: searchKey.value, category: category.value } });
+  router.push({ name: "products", query: queryParams.value });
 };
 
+useHead({
+  title: `Products | Ini Toko`,
+  titleTemplate: `Products | Ini Toko`,
+})
 
 definePageMeta({
   layout: 'my-layout',
@@ -193,8 +206,8 @@ definePageMeta({
                 <div class="flex flex-wrap max-w-[300px] gap-0.5">
                   <label v-for="item in categories" :key="item.id"
                     class="border-2 border-slate-100 px-[0.8em] py-[0.4em] rounded-md hover:cursor-pointer text-sm"
-                    :class="{ 'checked-label': item.id === category }">
-                    <input type="radio" v-model="category" :value="item.id" class="w-full h-full hidden" />
+                    :class="{ 'checked-label': item.id === queryParams.category }">
+                    <input type="radio" v-model="queryParams.category" :value="item.id" class="w-full h-full hidden" />
                     {{ item.name }}
                   </label>
                 </div>
@@ -203,7 +216,8 @@ definePageMeta({
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction @click="() => {
-                category = ''
+                queryParams.category = ''
+                queryParams.search = ''
                 onChoseCategorySubmit()
               }">Reset</AlertDialogAction>
               <AlertDialogAction @click="onChoseCategorySubmit">
@@ -218,7 +232,7 @@ definePageMeta({
           <Search class="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <input
             class="flex w-full rounded-md bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-sm"
-            placeholder="Search products..." v-model="searchKey" @input="() => {
+            placeholder="Search products..." v-model="queryParams.search" @input="() => {
               productSuggestions = [];
               productSuggestionsLoading = true;
               getProductSuggestions();
@@ -233,7 +247,7 @@ definePageMeta({
           </template>
 
           <div class="flex items-center justify-center" v-show="productSuggestionsLoading">
-            <svg aria-hidden="true" class="w-6 h-6 text-primary/40 transition animate-spin duration-800 fill-primary"
+            <!-- <svg aria-hidden="true" class="w-6 h-6 text-primary/40 transition animate-spin duration-800 fill-primary"
               viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
@@ -241,7 +255,8 @@ definePageMeta({
               <path
                 d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
                 fill="currentFill" />
-            </svg>
+            </svg> -->
+            <Loader2 class="stroke-black/40 animate-spin w-6 h-6"/>
           </div>
         </div>
 
@@ -253,7 +268,7 @@ definePageMeta({
         </Button>
       </NuxtLink>
     </div>
-    <Table class="mx-auto border rounded-lg text-xs lg:text-sm">
+    <Table class="mx-auto border rounded-lg text-xs lg:text-sm" v-if="products && !isLoading">
       <TableHeader>
         <TableRow>
           <TableHead>No</TableHead>
@@ -323,6 +338,9 @@ definePageMeta({
     <div v-if="!isLoading && products && !products.length" class="flex flex-col items-center justify-center">
       <NuxtImg :src="'/img/product-not-found.jpg'" class="block w-full md:w-1/3" />
       <p class="font-medium text-center text-base lg:text-lg">Product not found</p>
+    </div>
+    <div v-if="isLoading" class="flex h-[60vh] items-center justify-center ">
+      <Loader2 class="stroke-black/40 animate-spin w-6 h-6"/>
     </div>
   </section>
 </template>

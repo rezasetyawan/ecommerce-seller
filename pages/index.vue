@@ -39,6 +39,12 @@ revenueGraph.value = [
     { name: 'Dec', total: Math.floor(Math.random() * 5000) + 1000 },
 ]
 
+useHead({
+  title: `Home | Ini Toko`,
+  titleTemplate: `Home | Ini Toko`,
+})
+
+
 definePageMeta({
     layout: 'my-layout',
     middleware: 'seller'

@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { toRupiah, formatDate } from "~/utils";
-import { OrderDetail } from "~/types";
 import { ArrowLeft } from "lucide-vue-next";
-
-const route = useRoute();
-const orderId = ref(route.params.orderId as string);
+import { OrderDetail } from "~/types";
+import { formatDate, getStatusMessage, toRupiah } from "~/utils";
 
 interface ApiResponse {
   data: OrderDetail;
 }
 
+const route = useRoute();
+const orderId = ref(route.params.orderId as string);
 const order = ref<OrderDetail>();
 const { data } = await useFetch("/api/orders/" + orderId.value);
 const apiResponse = data.value as ApiResponse;
@@ -24,34 +23,10 @@ if (!apiResponse.data) {
   })
 }
 
-const getStatusMessage = (status: string) => {
-  let statusMessage: string = "";
-
-  switch (status) {
-    case "PENDING":
-      statusMessage = "Waiting confirmation";
-      break;
-    case "PAYMENT":
-      statusMessage = "Payment";
-      break;
-    case "ONPROCESS":
-      statusMessage = "Onprocess";
-      break;
-    case "SHIPPING":
-      statusMessage = "Shipping";
-      break;
-    case "CANCELLED":
-      statusMessage = "Cancelled";
-      break;
-    case "FINISHED":
-      statusMessage = "Finished";
-      break;
-    default:
-      statusMessage = "Invalid status.";
-  }
-
-  return statusMessage;
-};
+useHead({
+  title: `${order.value.address.name}'s order | Ini Toko`,
+  titleTemplate: `${order.value.address.name}'s order | Ini Toko`,
+})
 
 definePageMeta({
   layout: 'my-layout',
